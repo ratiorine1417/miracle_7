@@ -33,7 +33,23 @@ col3.metric("💸 월세", f"{rent_range[0]}~{rent_range[1]}")
 print(filtered_df)
 
 # 메인화면 불러오기
-show_homepage(filtered_df)
+if filtered_df:
+    show_homepage(filtered_df)
+else:
+    st.markdown(f"""
+        <div style="
+            background-color: #ffe6e6;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 6px solid #ff4d4d;
+            font-size: 16px;
+            color: #990000;
+        ">
+            <strong> 검색되지 않습니다. 다시 시도해주세요. <br>
+        </div>
+        """, unsafe_allow_html=True)
+
+
 
 
 
