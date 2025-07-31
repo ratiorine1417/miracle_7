@@ -60,7 +60,7 @@ def get_real_estate_data(cortar_no, rP_M, rP_m, p_M, p_m, page=1):
     url = "https://new.land.naver.com/api/articles"
 
     params = {
-        'cortarNo': str(cortar_no),
+        'cortarNo': str(cortar_no), # 지역코드
         'order': 'rank',
         'realEstateType': 'APT:OPST:ABYG:OBYG:GM:OR:DDDGG:JWJT:SGJT:HOJT:VL:YR:DSD:YR:DSD:YR:DSD:YR:DSD:YR:DSD:YR:DSD:YR:DSD:YR:DSD:YR:DSD:YR:DSD:YR:DSD:YR:DSD:YR:DSD',
         'tradeType': '', 

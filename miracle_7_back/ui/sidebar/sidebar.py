@@ -1,3 +1,5 @@
+##sidebar.py
+
 import streamlit as st
 
 def init_sidebar(df):
@@ -14,10 +16,16 @@ def init_sidebar(df):
 
     selected_location = f"{selected_city} {selected_district} {selected_town}"
 
+    
+    # ✅ 보증금 필터 추가
+    deposit_range = st.sidebar.slider("💰 보증금 범위 (만원)", 0, 10000, (500, 2000), step=100)
 
-    # 필터 옵션
+    # ✅ 월세 필터 추가
+    rent_range = st.sidebar.slider("💸 월세 범위 (만원)", 0, 500, (30, 80), step=5)
+
+    # 페이지 선택
     with st.sidebar:
         st.header("📊 페이지 선택")
         option = st.selectbox("페이지 선택", ["홈", "집값 예측"])
 
-    return option
+    return option, selected_location, deposit_range, rent_range

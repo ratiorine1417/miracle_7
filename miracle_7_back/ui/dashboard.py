@@ -1,12 +1,16 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # 상위 디렉토리 경로 등록
-
+from data.database import init_db, get_connection
 import streamlit as st
 import pandas as pd
 from ui.sidebar.sidebar import init_sidebar
 
 def show_homepage(df):
+    init_db()
+    # 20250731 백두현
+    # TODO: 데이터바인딩 작업 후 DB crud 작업하기
+
     #사이드바 불러오기
     filter_option = init_sidebar(df)
     filter_region = filter_option[1][0] # 지역
