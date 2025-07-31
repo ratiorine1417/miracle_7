@@ -29,3 +29,4 @@ def init_sidebar(df):
         option = st.selectbox("페이지 선택", ["홈", "집값 예측"])
 
     return option, selected_location, deposit_range, rent_range
+
