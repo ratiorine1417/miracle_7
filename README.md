@@ -1,4 +1,4 @@
-인스톨 필요 모듈: streamlit, streamlit-modal, 
+인스톨 필요 모듈: streamlit-modal, 
 
 
 최대현, 전예진, 이유진 - 데이터 전처리, 수집
