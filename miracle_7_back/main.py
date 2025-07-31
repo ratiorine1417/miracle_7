@@ -51,9 +51,6 @@ filtered_df = df[
     (df['월세'] >= rent_range[0]) & (df['월세'] <= rent_range[1])
 ]
 
-
-
-
 st.title("🏡 7번방의 기적")
 st.write("선택한 지역:", selected_location)
 st.write("보증금 범위:", deposit_range)
