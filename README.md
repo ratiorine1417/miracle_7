@@ -1,9 +1,12 @@
+인스톨 필요 모듈: streamlit-modal, 
+
+
 최대현, 전예진, 이유진 - 데이터 전처리, 수집
 
 crawling.py: 웹 크롤링을 위한 코드
 
 ```
-import srawling
+import crawling
 
 crawling.crawling(법정동, 최대보증금, 최소보증금, 최대 월세, 최소 월세)
 형식으로 인자를 넘겨 받으면 해당 동 원룸 매물 정보를 data/land_data.json 파일로 저장합니다.
