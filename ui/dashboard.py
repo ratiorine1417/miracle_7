@@ -7,12 +7,12 @@ import pandas as pd
 from ui.sidebar.sidebar import init_sidebar
 
 def show_homepage(df):
-    init_db()
+    #init_db()
     # 20250731 백두현
     # TODO: 데이터바인딩 작업 후 DB crud 작업하기
 
     #사이드바 불러오기
-    filter_option = init_sidebar(df)
+    filter_option = init_sidebar()
     filter_region = filter_option[1][0] # 지역
     filter_deposit_min = filter_option[2][0] # 최소 보증금
     filter_deposit_max = filter_option[2][1] # 최소 보증금
@@ -93,3 +93,4 @@ def show_homepage(df):
             st.warning("해당 매물 정보가 없습니다.")
     else:
         st.info("조건에 맞는 매물이 없습니다.")
+
