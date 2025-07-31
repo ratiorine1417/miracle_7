@@ -104,16 +104,16 @@ def save_to_json(all_data, filename):
     except Exception as e:
         print(f"JSON 파일 저장 중 오류 발생: {e}")
 
-def main():
+def crawling(key,rP_M,rP_m,p_M,p_m):
     with open('./data/cortar.json','r',encoding='utf-8') as file:
         co_data = json.load(file)
 
-    #임의로 넣은 값이며 구현 때 파라미터로 메인에서 받아올 값들입니다!
-    key='서울특별시 종로구 낙원동'  #동
-    rP_M ='90000000'            #최대 보증금
-    rP_m = '0'                  #최소 보증금
-    p_M = '90000000'            #최대 월세
-    p_m ='0'                    #최소 월세
+    # #임의로 넣은 값이며 구현 때 파라미터로 메인에서 받아올 값들입니다!
+    # key='서울특별시 종로구 낙원동'  #동
+    # rP_M ='90000000'            #최대 보증금
+    # rP_m = '0'                  #최소 보증금
+    # p_M = '90000000'            #최대 월세
+    # p_m ='0'                    #최소 월세
 
     cortar_no = (co_data.get(key,None)) #메인에서 받은 Key의 지역코드 반환
 
@@ -156,5 +156,5 @@ def main():
     except Exception as e:
         print(f"오류가 발생했습니다: {str(e)}")
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
