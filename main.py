@@ -16,8 +16,6 @@ selected_location, deposit_range, rent_range = init_sidebar()
 # 필터링 적용
 filtered_df = crawling(selected_location, deposit_range[1], deposit_range[0], rent_range[1], rent_range[0])
 
-print(f"크롤링데이터...{selected_location} {deposit_range[1]} {deposit_range[0]} {rent_range[1]} {rent_range[0]}")
-
 st.title("🏡 7번방의 기적")
 
 # 지역 이름 길이에 따라 너비 가중치 계산
@@ -31,7 +29,6 @@ col1, col2, col3 = st.columns([col_ratio, 1, 1])
 col1.metric("📍 지역", selected_location)
 col2.metric("💰 보증금", f"{deposit_range[0]}~{deposit_range[1]}")
 col3.metric("💸 월세", f"{rent_range[0]}~{rent_range[1]}")
-
 
 # 메인화면 불러오기
 if filtered_df:
