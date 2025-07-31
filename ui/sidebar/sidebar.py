@@ -3,7 +3,6 @@ from pathlib import Path
 import json
 
 def address_maker():
-
     st.sidebar.markdown(
         """
         <style>
@@ -59,17 +58,18 @@ def init_sidebar():
     
     cities, districts, towns = address_maker()
 
-    user_input = st.sidebar.text_area("지역을 입력하세요.", placeholder="주소 입력 후 ctrl + Enter")
+    user_input = st.sidebar.text_input("지역을 입력하세요.", placeholder="주소 입력 후 ctrl + Enter")
     st.sidebar.markdown(
     """
     <style>
-    textarea {
+    text_input {
         resize: none !important;
     }
     </style>
     """,
     unsafe_allow_html=True
     )
+    selected_location = "서울특별시 종로구 낙원동"
 
     if user_input:
         # 시/군/구 dict에서 사용자 입력과 관련 있는 키워드 찾기

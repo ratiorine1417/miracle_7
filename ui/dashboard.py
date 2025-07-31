@@ -10,14 +10,6 @@ def show_homepage(df):
     #init_db()
     # 20250731 백두현
     # TODO: 데이터바인딩 작업 후 DB crud 작업하기
-
-    #사이드바 불러오기
-    filter_option = init_sidebar()
-    filter_region = filter_option[1][0] # 지역
-    filter_deposit_min = filter_option[2][0] # 최소 보증금
-    filter_deposit_max = filter_option[2][1] # 최소 보증금
-    filter_monthly_rent_min = filter_option[3][0] # 최소 월세
-    filter_monthly_rent_max = filter_option[3][1] # 최대 월세
     
     # ---------------------
     # 지도 기반 시각화
