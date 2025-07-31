@@ -98,14 +98,14 @@ def save_to_json(all_data, filename):
         filename = filename.split('.')[0] + '.json'
     try:
 
-        with codecs.open(f'../data/{filename}', 'w', encoding='utf-8') as f:
+        with codecs.open(f'./data/{filename}', 'w', encoding='utf-8') as f:
             json.dump(all_data, f, ensure_ascii=False, indent=4)
         print(f"데이터가 '{filename}'에 JSON 형식으로 저장되었습니다.")
     except Exception as e:
         print(f"JSON 파일 저장 중 오류 발생: {e}")
 
 def main():
-    with open('../data/cortar.json','r',encoding='utf-8') as file:
+    with open('./data/cortar.json','r',encoding='utf-8') as file:
         co_data = json.load(file)
 
     #임의로 넣은 값이며 구현 때 파라미터로 메인에서 받아올 값들입니다!
