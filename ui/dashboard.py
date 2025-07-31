@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # 상위 디렉토리 경로 등록
+
 import streamlit as st
 import pandas as pd
 from ui.sidebar.sidebar import init_sidebar
@@ -5,8 +9,6 @@ from ui.sidebar.sidebar import init_sidebar
 def show_homepage(df):
     #사이드바 불러오기
     filter_option = init_sidebar(df)
-    filter_option = ['홈', ['서울 강남', '서울 마포', '서울 송파'], [20000, 40000], [300, 400]]
-    
     filter_region = filter_option[1][0] # 지역
     filter_deposit_min = filter_option[2][0] # 최소 보증금
     filter_deposit_max = filter_option[2][1] # 최소 보증금
@@ -15,6 +17,7 @@ def show_homepage(df):
     
     # ---------------------
     # 지도 기반 시각화
+
     # ---------------------
     st.subheader("🗺️ 지도 기반 매물 시각화")
 
@@ -37,12 +40,14 @@ def show_homepage(df):
     """, unsafe_allow_html=True)
     # st.subheader("🗺️ 지도 기반 매물 시각화")
     # m = folium.Map(location=[37.5, 127], zoom_start=11)
+    
 
     # for i, row in filtered_df.iterrows():
     #     popup_text = f"{row['지역']}<br>{row['가격']}만원<br>{row['주소']}"
     #     folium.Marker([row['위도'], row['경도']], popup=popup_text).add_to(m)
 
     # st_data = st_folium(m, width=700, height=500)
+
 
     # 필터링 적용
     filtered_df = df[
@@ -84,12 +89,3 @@ def show_homepage(df):
             st.warning("해당 매물 정보가 없습니다.")
     else:
         st.info("조건에 맞는 매물이 없습니다.")
-
-
-
-
-
-
-
-    
-
