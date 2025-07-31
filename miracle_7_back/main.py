@@ -34,7 +34,7 @@ df = pd.DataFrame({
 
 
 # 🔹 2. 사용자 입력값 사이드바로부터 받기
-option, selected_location, deposit_range, rent_range = init_sidebar(df)
+selected_location, deposit_range, rent_range = init_sidebar(df)
 
 # 🔹 3. 지역 문자열 분해 (서울특별시 강남구 역삼동)
 try:
