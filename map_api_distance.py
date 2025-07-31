@@ -94,6 +94,7 @@ if method == '자동차':
 elif method == '도보':
     # (json_name[latitude], json_name[longitude]), 이런 식으로 데이터 넣을 거라고 생각했습니다
     distance = get_distance_walk("경기 용인시 수지구 포은대로 530", "경기 용인시 수지구 죽전로 152")
-    print(distance)
+    if distance.isdigit():
+        print(f'거리: {distance}km / 걸리는 시간: {distance*16}분')
 else:
     print('잘못된 양식입니다. 다시 입력해 주세요!')
