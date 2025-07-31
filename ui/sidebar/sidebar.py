@@ -1,9 +1,12 @@
 import streamlit as st
 
 def init_sidebar(df):
+    st.sidebar.image("./image/miracle_7_logo.png", width=200)
     st.sidebar.title("🔍 필터링 검색")
 
     local_option = st.sidebar.multiselect("지역 선택",  options=df['지역'].unique(), default=df['지역'].unique())
+
+
 
     # 필터 옵션
     with st.sidebar:

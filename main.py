@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
 from ui.dashboard import show_homepage
+from ui.header.header import set_header
+
+# 헤더 세팅
+set_header()
 
 st.set_page_config(
     page_title="7번방의 기적",
@@ -25,8 +29,6 @@ df = pd.DataFrame({
 })
 ################################################################
 
-st.title("🏡 7번방의 기적")
-
-# 메인화면 불러오기기
+# 메인화면 불러오기
 show_homepage(df)
 
