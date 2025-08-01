@@ -51,7 +51,7 @@ else:
             <strong> 검색되지 않습니다. 다시 시도해주세요. <br>
         </div>
         """, unsafe_allow_html=True)
-
+# 수정
 
 
 
