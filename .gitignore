@@ -195,3 +195,5 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
 data/land_data.json
 data/land_data.csv
+*.csv
+*.json
