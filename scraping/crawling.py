@@ -10,7 +10,8 @@ import streamlit as st
 
 @st.cache_data
 
-def get_coords_from_kakao(query, api_key):
+def coords(query):
+    api_key = '61a75fb04f4dce476cc883a26c87c312'
     url = "https://dapi.kakao.com/v2/local/search/keyword.json"
     headers = {"Authorization": f"KakaoAK {api_key}"}
     params = {"query": query}

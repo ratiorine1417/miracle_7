@@ -4,6 +4,7 @@ from ui.dashboard import show_homepage
 from ui.sidebar.sidebar import init_sidebar
 from scraping.crawling import crawling
 
+
 st.set_page_config(
     page_title="7번방의 기적",
     layout="wide",
@@ -26,7 +27,7 @@ col_ratio = min(location_length / 5, 2)  # 최대 비율 제한
 
 col1, col2, col3 = st.columns([col_ratio, 1, 1])
 
-col1.metric("📍 지역", selected_location)
+col1.metric("📍 지역", selected_location,selected_location)
 col2.metric("💰 보증금", f"{deposit_range[0]}~{deposit_range[1]}")
 col3.metric("💸 월세", f"{rent_range[0]}~{rent_range[1]}")
 
