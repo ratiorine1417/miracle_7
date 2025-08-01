@@ -19,7 +19,7 @@ selected_location, deposit_range, rent_range = init_sidebar()
 
 
 # 필터링 적용
-filtered_df = crawling(selected_location, deposit_range[1], deposit_range[0], rent_range[1], rent_range[0])
+filtered_df = crawling(selected_location, deposit_range[0], deposit_range[1], rent_range[0], rent_range[1])
 
 st.title("🏡 7번방의 기적")
 
