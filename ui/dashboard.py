@@ -11,7 +11,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import json
 
 
-def show_homepage(df):
+def show_homepage(df, selected_location):
     # TODO: 이제 로그인 시 사용자마다 값을 저장할수있게 로직을 처리해보자! 20250731 백두현현
     #init_db()
 
