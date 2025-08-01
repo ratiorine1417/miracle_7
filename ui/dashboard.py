@@ -35,10 +35,10 @@ def show_homepage(df, selected_location):
     center_latitude, center_longitude = location_dict[selected_location]
     
     map_center = [center_latitude, center_longitude]
- 
+    marker_locations = [[listing["latitude"], listing["longitude"]] for listing in df]
 
     # 지도 표출
-    map = folium.Map(location=map_center, zoom_start=30)
+    map = folium.Map(location=map_center, zoom_start=15)
 
 
     # 크롤링된 매물들 처리
@@ -53,7 +53,8 @@ def show_homepage(df, selected_location):
                     </div>
                     """
         folium.Marker([listing["latitude"], listing["longitude"]], popup=folium.Popup(popup_html, max_width=500), tooltip="클릭해서 매물보기").add_to(map)
-
+    if marker_locations:
+        map.fit_bounds(marker_locations)
     m_html = map._repr_html_() 
     html(m_html, height=500)
 
