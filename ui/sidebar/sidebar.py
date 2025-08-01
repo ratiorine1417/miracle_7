@@ -2,8 +2,17 @@ import streamlit as st
 from pathlib import Path
 import json
 
-def address_maker():
+def is_unit(code):
+    code_str = str(code)
+    # 길이가 10자리인 경우: 마지막 체크디지트는 제거
+    if len(code_str) == 10:
+        code_str = code_str[:9]
 
+    # 읍/면/동 단위인지 판단: 뒤 4자리가 '0000'이 아니면 동단위
+    return code_str[-4:] != '0000'
+
+
+def address_maker(user_input):
     st.sidebar.markdown(
         """
         <style>
@@ -21,31 +30,10 @@ def address_maker():
     with open(file_path, encoding="utf-8") as f:
         address_data = json.load(f)
 
-    # 행정구역코드 XX00000000 이면 시/도 단위의 코드
-    si_level = {
-        name: code 
-        for name, code in address_data.items()
-        if code % 10**8 == 0
-    }
-    si_level_keys = si_level.keys()
+    address = [key for key in address_data if user_input in key]
+    matched_dict = {key : value for key, value in address_data.items() if user_input in key}
+    return address, matched_dict
 
-    # 행정구역코드의 뒤 5자리가 0이면서 앞 5자리는 0이 아닌코드면 시/군/구구
-    gu_level = {
-        name: code
-        for name, code in address_data.items()
-        if code % 10**5 == 0 and code % 10**8 != 0
-    }
-    gu_level_keys = gu_level.keys()
-
-    # 행정구역코드의 마지막 2자리가 00이 아님 → 리/통/반 제외하면 읍/면/동 단위의 코드
-    dong_level = {
-        name: code
-        for name, code in address_data.items()
-        if code % 100 != 0  
-    }
-    dong_level_keys = dong_level.keys()
-
-    return si_level_keys, gu_level_keys, dong_level_keys
 
 def init_sidebar():
     #st.sidebar.image("./image/miracle_7_logo.png", width=200)
@@ -56,14 +44,16 @@ def init_sidebar():
 
     st.sidebar.subheader("📍 지역 선택")
     
-    
-    cities, districts, towns = address_maker()
+    user_input = st.sidebar.text_input("지역을 입력하세요.", placeholder="주소 입력 후 Enter")
 
-    user_input = st.sidebar.text_area("지역을 입력하세요.", placeholder="주소 입력 후 ctrl + Enter")
+    addresses = []
+    if user_input:
+        addresses, addresses_dict = address_maker(user_input)
+    
     st.sidebar.markdown(
     """
     <style>
-    textarea {
+    text_input {
         resize: none !important;
     }
     </style>
@@ -71,14 +61,12 @@ def init_sidebar():
     unsafe_allow_html=True
     )
 
-    if user_input:
-        # 시/군/구 dict에서 사용자 입력과 관련 있는 키워드 찾기
-        matched_districts = [name for name in cities if user_input.strip() in name]
-        matched_districts = [name for name in districts if user_input.strip() in name]
-        matched_districts = [name for name in towns if user_input.strip() in name]
-        if matched_districts:
-            selected_location = st.sidebar.selectbox("📍 추천 주소를 선택하세요", matched_districts)
-    
+    if addresses:
+        selected_location = st.sidebar.selectbox("📍 추천 주소를 선택하세요", addresses)
+        code = addresses_dict.get(selected_location)
+
+        print(is_unit(code))
+        if is_unit(code):
             # 선택된 주소를 꾸며서 출력
             st.sidebar.markdown(
                 f"""
@@ -95,8 +83,10 @@ def init_sidebar():
                 """,
                 unsafe_allow_html=True
             )
-
         else:
-            st.sidebar.markdown("❌ 관련된 주소를 찾을 수 없어요.")
+            st.warning("❗ 선택한 주소가 너무 간단해요. 자세한 지역 단위를 선택해주세요.")
+    else:
+        selected_location = ""
+        st.sidebar.markdown("❌ 관련된 주소를 찾을 수 없어요.")
     
     return selected_location, deposit_range, rent_range

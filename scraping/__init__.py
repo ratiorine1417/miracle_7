@@ -1,1 +1,1 @@
-from scraping import crawler
+from scraping import crawling
