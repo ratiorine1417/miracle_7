@@ -14,6 +14,10 @@ st.set_page_config(
 #사용자 입력값 사이드바로부터 받기
 selected_location, deposit_range, rent_range = init_sidebar()
 
+
+
+
+
 # 필터링 적용
 filtered_df = crawling(selected_location, deposit_range[1], deposit_range[0], rent_range[1], rent_range[0])
 
