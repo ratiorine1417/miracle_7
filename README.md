@@ -5,3 +5,5 @@ crawling.crawling(법정동, 최대보증금, 최소보증금, 최대 월세, �
 
 백두현, 남다겸 - 모델 및 웹개발
 1. 지도 시각화 패키지 설치 (pip install folium)
+2. 모달창 패키지 설치 (pip install streamlit-modal)
+3. scikit-learn 패키지 설치 (pip install scikit-learn)
