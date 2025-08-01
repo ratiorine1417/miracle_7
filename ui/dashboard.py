@@ -7,9 +7,9 @@ import pandas as pd
 from ui.sidebar.sidebar import init_sidebar
 import folium
 from streamlit.components.v1 import html
-from modal.modal import show_property_modal
+from scraping.crawling import coords
 
-def show_homepage(df):
+def show_homepage(df,selected_location):
     # TODO: 이제 로그인 시 사용자마다 값을 저장할수있게 로직을 처리해보자! 20250731 백두현현
     #init_db()
 
@@ -18,8 +18,7 @@ def show_homepage(df):
     # ---------------------
     st.subheader("🗺️ 지도 기반 매물 시각화")
 
-    center_longitude = float(df[0]["longitude"])
-    center_latitude  = float(df[0]["latitude"])
+    center_longitude, center_latitude  = coords(selected_location)
     map_center = [center_latitude, center_longitude]
 
 
@@ -45,47 +44,33 @@ def show_homepage(df):
 
     st.subheader("📋 매물 리스트")
 
-    sort_options = {
-        '건물명': 'articleName',
-        '보증금/월세': 'sameAddrMaxPrc',
-        '협의가능' : 'sameAddrMinPrc'
-    }
-
-    selected_label = st.selectbox("정렬 기준", list(sort_options.keys()))
-    standard_sort = sort_options[selected_label]
-
+    standard_sort = st.selectbox("정렬 기준", ['sameAddrMaxPrc']) # 정렬 기준 
     type_sort = st.radio("정렬 방식", ['오름차순', '내림차순'])  # 정렬 방식
 
     ascending = True if type_sort == '오름차순' else False
     real_df = pd.DataFrame(df)
-    sorted_df = real_df.sort_values(by=standard_sort, ascending=ascending).reset_index(drop=True)
+    sorted_df = real_df.sort_values(by=standard_sort, ascending=ascending)
 
-    selected_columns = list(sort_options.values())
-
-    selected_row = st.data_editor(sorted_df[selected_columns], num_rows="dynamic", use_container_width=True, hide_index=True, key="editor")
-    
-    if isinstance(selected_row, pd.DataFrame) and not selected_row.empty:
-        show_property_modal()
-    #st.dataframe(sorted_df[selected_columns])dd
+    st.dataframe(sorted_df[['sameAddrMaxPrc']])
 
     # ---------------------
     # 매물 상세 정보 모달 구성 
     # ---------------------
     st.subheader("🏠 매물 상세 보기")
 
-    # for sort_item in sorted_df:
-    #     if not sort_item.empty:
-    #         select_house = st.selectbox("매물 선택", sort_item['sameAddrMaxPrc'].tolist())
-    #         selected_df = sort_item[sort_item['sameAddrMaxPrc'] == select_house]
+    for sort_item in sorted_df:
+        if not sort_item.empty:
+            select_house = st.selectbox("매물 선택", sort_item['sameAddrMaxPrc'].tolist())
+            selected_df = sort_item[sort_item['sameAddrMaxPrc'] == select_house]
 
-    #         if not selected_df.empty:
-    #             info_house = selected_df.iloc[0]
-    #             with st.expander("매물 상세 정보 보기"):
-    #                 st.write("📞 주변 공인중개사: 02-1234-5678")
-    #         else:
-    #             st.warning("해당 매물 정보가 없습니다.")
-    #     else:
-    #         st.info("조건에 맞는 매물이 없습니다.")
+            if not selected_df.empty:
+                info_house = selected_df.iloc[0]
+                with st.expander("매물 상세 정보 보기"):
+                    st.write("📞 주변 공인중개사: 02-1234-5678")
+            else:
+                st.warning("해당 매물 정보가 없습니다.")
+        else:
+            st.info("조건에 맞는 매물이 없습니다.")
 
         # if not sort_item.empty:
         #     select_house = st.selectbox("매물 선택", sort_item['주소'].tolist())
