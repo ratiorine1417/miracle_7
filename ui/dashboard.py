@@ -21,7 +21,6 @@ def show_homepage(df,selected_location):
     with open("./data/late.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # JSON 데이터를 딕셔너리로 변환 (행정구역명을 키로)
     location_dict = {
         entry["행정구역"]: (entry["위도"], entry["경도"])
         for entry in data
