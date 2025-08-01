@@ -38,7 +38,7 @@ def show_homepage(df, selected_location):
     marker_locations = [[listing["latitude"], listing["longitude"]] for listing in df]
 
     # 지도 표출
-    map = folium.Map(location=map_center, zoom_start=15,max_zoom=100)
+    map = folium.Map(location=map_center, zoom_start=13,max_bounds=True)
 
 
     # 크롤링된 매물들 처리
