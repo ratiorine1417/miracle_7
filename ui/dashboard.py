@@ -7,7 +7,7 @@ import pandas as pd
 from ui.sidebar.sidebar import init_sidebar
 import folium
 from streamlit.components.v1 import html
-from scraping.crawling import coords
+import json
 
 def show_homepage(df,selected_location):
     # TODO: 이제 로그인 시 사용자마다 값을 저장할수있게 로직을 처리해보자! 20250731 백두현현
@@ -18,9 +18,18 @@ def show_homepage(df,selected_location):
     # ---------------------
     st.subheader("🗺️ 지도 기반 매물 시각화")
 
-    center_longitude, center_latitude  = coords(selected_location)
-    map_center = [center_latitude, center_longitude]
+    with open("./data/late.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
 
+    # JSON 데이터를 딕셔너리로 변환 (행정구역명을 키로)
+    location_dict = {
+        entry["행정구역"]: (entry["위도"], entry["경도"])
+        for entry in data
+    }
+    center_latitude, center_longitude = location_dict[selected_location]
+    
+    map_center = [center_latitude, center_longitude]
+ 
 
     # 지도 표출
     map = folium.Map(location=map_center, zoom_start=30)
