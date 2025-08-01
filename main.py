@@ -37,7 +37,7 @@ col3.metric("💸 월세", f"{rent_range[0]}~{rent_range[1]}")
 
 # 메인화면 불러오기
 if filtered_df:
-    show_homepage(filtered_df)
+    show_homepage(filtered_df, selected_location)
 else:
     st.markdown(f"""
         <div style="
