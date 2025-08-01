@@ -49,7 +49,8 @@ def show_homepage(df):
         '건물명': 'articleName',
         '보증금/월세': 'sameAddrMaxPrc',
         '협의가능' : 'sameAddrMinPrc',
-        '주거유형' : 'realEstateTypeName'
+        '주거유형' : 'realEstateTypeName',
+        '매물특징' : 'articleFeatureDesc'
     }
 
     selected_label = st.selectbox("정렬 기준", list(sort_options.keys()))
@@ -61,29 +62,39 @@ def show_homepage(df):
     real_df = pd.DataFrame(df)
     sorted_df = real_df.sort_values(by=standard_sort, ascending=ascending).reset_index(drop=True)
 
-    selected_columns_display = ['건물명', '보증금/월세', '협의가능', '주거유형']
+    selected_columns_display = ['건물명', '보증금/월세', '협의가능', '주거유형', '매물특징']
 
     selected_columns = [sort_options[col] for col in selected_columns_display]
 
     grid_df = sorted_df[selected_columns]
-    st.dataframe(grid_df)
+    #st.dataframe(grid_df)
 
+
+
+    
     # 빌드 설정
     builder = GridOptionsBuilder.from_dataframe(sorted_df)
+    # 모든 컬럼 숨기기
+    for col in sorted_df.columns:
+        builder.configure_column(col, hide=True)
     builder.configure_pagination(enabled=True) # 페이징 처리
-    builder.configure_selection(selection_mode='single', use_checkbox=True) # 체크박스 on
-    builder.configure_column(field='articleName', editable=False) # 편집 모드 off
-    builder.configure_column(field='sameAddrMaxPrc', editable=False)
-    builder.configure_column(field='sameAddrMinPrc', editable=False)
-    builder.configure_column(field='realEstateTypeName', editable=False)
+    builder.configure_selection(selection_mode='single', use_checkbox=True) 
+    builder.configure_column(field='articleNo', header_name='NO', editable=False, hide=False)
+    builder.configure_column(field='articleName', header_name='매물명', editable=False, hide=False) 
+    builder.configure_column(field='sameAddrMaxPrc', header_name='보증금/월세',editable=False, hide=False)
+    builder.configure_column(field='sameAddrMinPrc', header_name='협의가능', editable=False, hide=False)
+    builder.configure_column(field='realEstateTypeName', header_name='매물유형', editable=False, hide=False)
+    builder.configure_column(field='articleFeatureDesc', header_name='매물특징', editable=False, hide=False)
+
 
     grid_options = builder.build()
 
     grid_response = AgGrid(grid_df, gridOptions=grid_options)
 
     selected_rows = grid_response.get('selected_rows')
+
     if selected_rows is not None and not selected_rows.empty:
-        selected = selected_rows[0]
+        selected = selected_rows.iloc[0]
         print(selected)
 
 
