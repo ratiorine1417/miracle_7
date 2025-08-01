@@ -4,83 +4,48 @@
 
 #다중선형회귀(Multiple Linear Regression) 기본 예제 - 월세예측
 
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
+# machinelearning.py
+
 import pandas as pd
-
-
-#1 데이터 불러오기 (월세와 면적, 침실 수, 지하철 역 거리 정보 등)
-
-rent_Data = pd.read_csv(" 데이터 링크 ")
-
-
-#2 데이터 훈련과 테스트 (train_test_split 함수 이용) 
-# x: 방갯수, 몇평, 지하철역 거리 .... y: 가격
-
 from sklearn.model_selection import train_test_split
-x = rent_Data [['bedrooms', 'bathroom', 'size_sqft', 'min_to_subway', 'floor', 'building_age_yrs']]
-y = rent_Data [['rent']]
-print(y)
-print(y.shape)
-x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.8, test_size=0.2)
-
-
-#3 예측 모델 생성하기 
-
 from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+import pickle
+
+# JSON 데이터 불러오기
+rent_Data = pd.read_json("data/land_data.json")
+
+# 전처리
+rent_Data['floor'] = rent_Data['floorInfo'].str.extract(r'(\d+)').astype(float)
+direction_map = {d: i for i, d in enumerate(rent_Data['direction'].dropna().unique())}
+rent_Data['direction_code'] = rent_Data['direction'].map(direction_map)
+rent_Data['rent'] = rent_Data['rentPrc'].astype(float)
+
+# 유효한 데이터만 사용
+rent_Data = rent_Data.dropna(subset=['floor', 'direction_code', 'rent'])
+
+# x, y 분리
+x = rent_Data[['floor', 'direction_code']]
+y = rent_Data[['rent']]
+
+# 학습/테스트 분할
+x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.8)
+
+# 모델 학습
 lr = LinearRegression()
 lr.fit(x_train, y_train)
 
+# 정확도 확인
+print("모델 정확도:", lr.score(x_test, y_test))
 
-#4 예측해보기
+# 모델 저장
+with open("models/rent_model.pkl", "wb") as f:
+    pickle.dump((lr, direction_map), f)
 
-i_Want = [[3, 1, 720, 17, 5]]
-rent_Fee = lr.predict(i_Want)
-print(rent_Fee)
-
+# 시각화
 y_predicted = lr.predict(x_test)
-
-
-#5 연관관계 살펴보고 모델의 정확도 평가하기
-
-plt.scatter(y_test, y_predicted, alpha=0.4)
-plt.xlabel("Actural Rent")
-plt.ylabel("Predicted Rent")
-plt.title("Rent Prediction")
+plt.scatter(y_test, y_predicted, alpha=0.5)
+plt.xlabel("실제 월세")
+plt.ylabel("예측 월세")
+plt.title("실제 vs 예측")
 plt.show()
-
-print(lr.coef_)
-
-
-#1 주택의 면적 'size_sqft'  과 가격 'rent'
-
-plt.scatter(rent_Data[['size_sqft']], rent_Data[['rent']], alpha=0.4)
-plt.show()
-
-#2 침실 수와 가격
-
-plt.scatter(rent_Data[['bedrooms']], rent_Data[['rent']], alpha=0.4)
-plt.show()
-
-
-#3 정원의 유무와 가격
-
-plt.scatter(rent_Data[['has_patio']], rent_Data[['rent']], alpha=0.4)
-plt.show()
-
-
-# 4 지하철 역까지 거리와 가격
-
-plt.scatter(rent_Data[['min_to_subway']], rent_Data[['rent']], alpha=0.4)
-plt.show()
-
-
-# 5 주택이 얼마나 오래 전에 지어졌는지와 가격
-
-plt.scatter(rent_Data[['building_age_yrs']], rent_Data[['rent']], alpha=0.4)
-plt.show()
-
-# 모델의 정확도 평가하기
-
-print(lr.score(x_train, y_train))
