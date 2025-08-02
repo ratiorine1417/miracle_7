@@ -15,9 +15,6 @@ st.set_page_config(
 selected_location, deposit_range, rent_range = init_sidebar()
 
 
-
-
-
 # 필터링 적용
 filtered_df = crawling(selected_location, rent_range[1], rent_range[0], deposit_range[1], deposit_range[0])
 
