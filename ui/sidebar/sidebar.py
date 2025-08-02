@@ -1,6 +1,9 @@
 import streamlit as st
 from pathlib import Path
+import requests
 import json
+# 행정안전부 도로명주소 검색 API 키 (~20251031까지)
+API_KEY = "	devU01TX0FVVEgyMDI1MDgwMjE1MzU0NTExNjAxNTA="
 
 def is_unit(code):
     code_str = str(code)
@@ -35,6 +38,43 @@ def address_maker(user_input):
  
     return address, matched_dict
 
+def search_address(keyword):
+    url = "https://www.juso.go.kr/addrlink/addrLinkApi.do"
+    params = {
+        "confmKey": API_KEY,
+        "keyword": keyword,
+        "resultType": "json"
+    }
+    res = requests.get(url, params=params)
+
+    return res.json()
+
+def init_finding_path():
+    st.sidebar.title("🔍 직장과 가까운 매물 검색")
+
+    st.sidebar.subheader("🏢 회사/사무실 주소를 기입해주세요.")
+    company_input = st.sidebar.text_input("📍 위치를 입력하세요.", placeholder="주소 입력 후 Enter")
+    
+    if company_input:
+        respond_json = search_address(company_input)
+        address_json = respond_json["results"]["juso"]
+
+        if address_json:
+            st.sidebar.subheader(f"🔍 '{company_input}' 관련 주소 결과")
+            addr_options = [
+                f"{addr['roadAddr']}"
+                for addr in address_json
+            ]
+            company_input = st.sidebar.selectbox("📍 관련 주소 목록", addr_options)
+
+            st.success(f"✅ 선택된 주소:\n\n{company_input}")
+        else:
+           st.sidebar.warning("검색 결과가 없습니다.")
+    
+    st.sidebar.subheader("🚊 교통수단을 선택해주세요.")
+    vehicles = {"🚶‍♂️ 도보":"walk", "🚇 지하철":"subway", "🚕 택시":"texi", "🚌 버스":"bus"}
+    user_input = st.sidebar.selectbox("📍 교통수단", list(vehicles.keys()))
+    return company_input, vehicles[user_input]
 
 def init_sidebar():
     #st.sidebar.image("./image/miracle_7_logo.png", width=200)
@@ -55,7 +95,7 @@ def init_sidebar():
     """
     <style>
     text_input {
-        resize: none !important;
+        res ize: none !important;
     }
     </style>
     """,
