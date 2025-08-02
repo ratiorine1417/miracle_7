@@ -8,24 +8,6 @@ import pandas as pd
 from bs4 import BeautifulSoup 
 import streamlit as st
 
-@st.cache_data
-
-def coords(query):
-    api_key = '61a75fb04f4dce476cc883a26c87c312'
-    url = "https://dapi.kakao.com/v2/local/search/keyword.json"
-    headers = {"Authorization": f"KakaoAK {api_key}"}
-    params = {"query": query}
-    try:
-        response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status() # Raise an exception for HTTP errors
-        res = response.json()
-        if res["documents"]:
-            doc = res["documents"][0]
-            return doc["y"], doc["x"]  # 위도, 경도
-        return None, None
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching coordinates from Kakao: {e}")
-        return None, None
 
 def get_real_estate_data(cortar_no, rP_M, rP_m, p_M, p_m, page=1):
 
