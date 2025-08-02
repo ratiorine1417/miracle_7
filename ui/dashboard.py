@@ -38,7 +38,7 @@ def show_homepage(df, selected_location):
     marker_locations = [[listing["latitude"], listing["longitude"]] for listing in df]
 
     # 지도 표출
-    map = folium.Map(location=map_center, zoom_start=13,max_bounds=True)
+    map = folium.Map(location=map_center, zoom_start=13)
 
 
     # 크롤링된 매물들 처리
@@ -104,51 +104,33 @@ def show_homepage(df, selected_location):
 
     grid_options = builder.build()
 
-    grid_response = AgGrid(grid_df, gridOptions=grid_options)
+    grid_response = AgGrid(sorted_df, gridOptions=grid_options, update_mode='SELECTION_CHANGED')
 
-    selected_rows = grid_response.get('selected_rows')
-
-    if selected_rows is not None and not selected_rows.empty:
-        selected = selected_rows.iloc[0]
-        print(selected)
+    selected_data = grid_response.get('selected_rows', [])
 
 
-
-    # ---------------------
-    # 매물 상세 정보 모달 구성 
-    # ---------------------
-    st.subheader("🏠 매물 상세 보기")
-
-    # for sort_item in sorted_df:
-    #     if not sort_item.empty:
-    #         select_house = st.selectbox("매물 선택", sort_item['sameAddrMaxPrc'].tolist())
-    #         selected_df = sort_item[sort_item['sameAddrMaxPrc'] == select_house]
-
-    #         if not selected_df.empty:
-    #             info_house = selected_df.iloc[0]
-    #             with st.expander("매물 상세 정보 보기"):
-    #                 st.write("📞 주변 공인중개사: 02-1234-5678")
-    #         else:
-    #             st.warning("해당 매물 정보가 없습니다.")
-    #     else:
-    #         st.info("조건에 맞는 매물이 없습니다.")
-
-        # if not sort_item.empty:
-        #     select_house = st.selectbox("매물 선택", sort_item['주소'].tolist())
-        #     selected_df = sort_item[sort_item['주소'] == select_house]
-
-        #     if not selected_df.empty:
-        #         info_house = selected_df.iloc[0]
-        #         with st.expander(f"{info_house['주소']} 상세 정보 보기"):
-        #             st.write(f"📍 위치: {info_house['지역']} - {info_house['주소']}")
-        #             st.write(f"💰 가격: {info_house['가격']}만원")
-        #             st.write(f"📐 면적: {info_house['면적']}㎡")
-        #             st.write(f"🚪 방수: {info_house['방수']} / 층수: {info_house['층']}")
-        #             st.write(f"🔥 난방: {info_house['난방']} / 🛗 엘리베이터: {info_house['엘리베이터']}")
-        #             st.image("https://via.placeholder.com/300x200.png?text=매물+이미지", caption="샘플 이미지")
-        #             st.write("📞 주변 공인중개사: 02-1234-5678")
-        #     else:
-        #         st.warning("해당 매물 정보가 없습니다.")
-        # else:
-        #     st.info("조건에 맞는 매물이 없습니다.")
-
+    if isinstance(selected_data, pd.DataFrame):
+        if not selected_data.empty:
+            selected_row = selected_data.iloc[0].to_dict()
+            st.markdown("### 🏠 매물 상세 정보")
+            
+            st.write(f"**매물명**: {selected_row.get('articleName', '정보 없음')}")
+            st.write(f"**매물유형**: {selected_row.get('realEstateTypeName', '정보 없음')}")
+            st.write(f"**거래유형**: {selected_row.get('tradeTypeName', '정보 없음')}")
+            st.write(f"**보증금/월세**: {selected_row.get('sameAddrMaxPrc', '정보 없음')}")
+            st.write(f"**공급/전용면적**: {selected_row.get('area1', '정보 없음')}㎡/{selected_row.get('area2', '정보 없음')}㎡")
+            st.write(f"**방향**: {selected_row.get('direction', '정보 없음')}")
+            st.write(f"**층수**: {selected_row.get('floorInfo', '정보 없음')}")
+            st.write(f"**매물특징**: {selected_row.get('articleFeatureDesc', '정보 없음')}")
+            
+            tag_list = selected_row.get('tagList', [])
+            tags = ", ".join(tag_list) if tag_list else "정보 없음"
+            st.write(f"**태그**: {tags}")
+            
+            st.write(f"**확인일자**: {selected_row.get('articleConfirmYmd', '정보 없음')}")
+            st.write(f"**중개사무소**: {selected_row.get('realtorName', '정보 없음')}")
+            st.write(f"**매물링크**: {selected_row.get('cpPcArticleUrl', '정보 없음')}")
+        else:
+            st.write("📌 선택된 행이 없습니다.")
+    else:
+        st.write("📌 선택된 행들:", selected_data)
