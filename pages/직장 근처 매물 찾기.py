@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-import re
+import itertools
 import pandas as pd
 from streamlit_folium import st_folium
 from scraping.crawling import crawling
@@ -8,6 +8,7 @@ from ui.sidebar.sidebar import init_finding_path
 import time
 from geopy.geocoders import Nominatim
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+import base64
 
 # kakao API 키
 kakao_api_key = "fb1bd569e343b2b3821ea18ec1694b74"
@@ -53,7 +54,7 @@ def update_region_name(address_name):
 def get_route(startX, startY, endX, endY, appKey, method):
     if method == "🚶‍♂️ 도보":
         tmp = get_walk_route(startX, startY, endX, endY, tmap_api_key)
-    elif method == "🚌 버스":
+    elif method == "🚌 자동차":
         tmp = get_car_route(startX, startY, endX, endY, tmap_api_key)
 
     return convert_distance_time(tmp)
@@ -161,9 +162,6 @@ if start_latitude and start_longitude:
     if flag:
         filtered_df = crawling(address_name, rent_range[1], rent_range[0], deposit_range[1], deposit_range[0])
 
-        if not filtered_df:
-            st.warning("매물 데이터가 존재하지 않습니다.")
-        
         house_locations = [
             {
                     "articleName": item["articleName"],
@@ -230,35 +228,69 @@ if start_latitude and start_longitude:
                     "소요시간": route[2]
                 })
         st.subheader("📋 나의 매물 카드")
-
+        st.info(f"검색결과: 총 매물 {len(filtered_df)}개")
         if not records:
-            st.info("표시할 매물이 없습니다 😢")
+            # 이미지 base64 인코딩
+            with open('./image/miracle_7_logo_notfound.png', 'rb') as f:
+                img_bytes = f.read()
+                encoded = base64.b64encode(img_bytes).decode()
 
-        for item in records:
-            with st.container():
+            # 인포 스타일의 박스
+            html = f"""
+                <div style="background-color: #e6f2ff; padding: 20px; border-left: 6px solid #2196F3;">
+                <div style="font-size:16px; color: #003366; margin-bottom: 10px;">
+                    표시할 매물이 없습니다 😢
+                </div>
+                <img src="data:image/png;base64,{encoded}" width="300">
+                </div>
+            """
+
+            st.markdown(html, unsafe_allow_html=True)
+
+
+        records_iterator = iter(records)
+
+        for item1, item2 in zip(records_iterator, records_iterator):
+            col1, col2 = st.columns(2)
+            with col1: 
                 st.markdown(
                     f"""
-                    <div style="background-color:#f5f5f5; padding:15px; border-radius:8px; box-shadow: 1px 1px 4px rgba(0,0,0,0.1);">
-                        <h3>🏠 {item["articleName"]}</h3>
-                        🔖 <strong>매물 타입:</strong> {item["realEstateTypeName"]}<br>
-                        🤝 <strong>거래유형:</strong> {item["tradeTypeName"]}<br>
-                        🔢 <strong>면적:</strong> {item["area1"]}㎡ / {item["area2"]}㎡<br>
-                        ☀️ <strong>방향:</strong> {item["direction"]}<br>
-                        🧭 <strong>층수:</strong> {item["floorInfo"]}  <strong>복층 여부:</strong> {"복층" if "복층" in item["tagList"] else "일반형"}<br>
-                        💰 <strong>보증금/월세:</strong> {item["dealOrWarrantPrc"]} / {item["rentPrc"]}만원<br>
-                        🏢 <strong>건물명:</strong> {item["buildingName"]}<br>
-                        🗓️ <strong>확인일자:</strong> {item["articleConfirmYmd"][:4]}년 {item["articleConfirmYmd"][4:6]}월 {item["articleConfirmYmd"][6:]}일<br>
-                        👤 <strong>공인중개사:</strong> {item["realtorName"]}<br>
-                        🚗 <strong>{item["이동수단"]}</strong> → <strong>{item["거리"]}</strong>km<br>
-                        ⏱️ 예상 소요시간: <strong>{item["소요시간"]}</strong><br><br>
-                        👉 <a href="{item["cpPcArticleUrl"]}" target="_blank">매물 상세페이지 바로가기</a>
+                    <div style="background-color: #f7f9fc; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:20px;">
+                        <h2>🏠 {item1["articleName"]}</h2>
+                        <p>🧭 채광 방향           <strong>{item1["direction"]}</strong></p>                                  
+                        <p>🏢 층수(복층 여부)     <strong>{item1["floorInfo"]} ({"복층" if "복층" in item1["tagList"] else "일반형"}) </strong></p>
+                        <p>📐 매물의 면적         <strong>{item1["area1"]}㎡ / {item1["area2"]}㎡</strong></p>
+                        <p>📍 매물까지의 거리      <strong>{item1["거리"]}</strong></p>                                     
+                        <p>⏱️ 매물까지 소요 시간   <strong>{item1["소요시간"]} 소요</strong></p>
+                        <p>📅 확인일자           <strong>{item1["articleConfirmYmd"][:4]}년 {item1["articleConfirmYmd"][4:6]}월 {item1["articleConfirmYmd"][6:]}일</strong></p>
+                        <p>🧑‍💼 공인중개사         <strong>{item1["realtorName"]}</strong></p>
+                        <a href="{item1["cpPcArticleUrl"]}" style="color:black; border:none; padding:10px 15px; border-radius:8px; margin-top:10px;">
+                            📄 매물 상세페이지 보기
+                        </a>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
-                st.markdown("")  
-
-
+            with col2:
+                st.markdown(
+                    f"""
+                    <div style="background-color: #f7f9fc; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:20px;">
+                        <h2>🏠 {item2["articleName"]}</h2>
+                        <p>🧭 채광 방향           <strong>{item2["direction"]}</strong></p>                                   
+                        <p>🏢 층수(복층 여부)     <strong>{item2["floorInfo"]} ({"복층" if "복층" in item2["tagList"] else "일반형"}) </strong></p>
+                        <p>📐 매물의 면적         <strong>{item2["area1"]}㎡ / {item2["area2"]}㎡</strong></p>
+                        <p>📍 매물까지의 거리      <strong>{item2["거리"]}</strong></p>                                           
+                        <p>⏱️ 매물까지 소요 시간   <strong>{item2["소요시간"]} 소요</strong></p>
+                        <p>📅 확인일자           <strong>{item2["articleConfirmYmd"][:4]}년 {item2["articleConfirmYmd"][4:6]}월 {item2["articleConfirmYmd"][6:]}일</strong></p>
+                        <p>🧑‍💼 공인중개사         <strong>{item2["realtorName"]}</strong></p>
+                        <a href="{item2["cpPcArticleUrl"]}" style="color:black; border:none; padding:10px 15px; border-radius:8px; margin-top:10px;">
+                            📄 매물 상세페이지 보기
+                        </a>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+        st.markdown("")
 
         col1 = st.columns(1)
         with col1[0]: 
