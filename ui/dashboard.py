@@ -104,18 +104,13 @@ def show_homepage(df, selected_location, start_longitude, start_latitude):
                 <strong>📏 거리:</strong> {top1["distance"]:.4f} km<br>
                 <strong>🏷️ 이름:</strong> {article_name}<br>
                 <strong>💬 특징:</strong> {tag_elements}</p>
-                <strong>💬 보증금/월세:</strong> {rent}</p>
-                <a href="{top1_link}" target="_blank" style="
-                    text-decoration: none; 
-                    background-color: #007bff; 
-                    color: white; 
-                    padding: 8px 16px; 
-                    border-radius: 8px; 
-                    display: inline-block;
-                ">매물 상세 페이지 바로가기</a>                
+                <strong>💬 보증금/월세:</strong> {rent}</p>             
             </div>
             """, unsafe_allow_html=True)
-
+        if top1_link:
+            col_empty1, col_btn, col_empty2 = st.columns([1, 2, 1])
+            with col_btn:
+                st.link_button("매물 상세 페이지 바로가기", top1_link, type="primary", use_container_width=True)
     sort_options = {
         '건물명': 'articleName',
         '보증금/월세': 'sameAddrMaxPrc',
