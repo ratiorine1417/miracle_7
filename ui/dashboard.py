@@ -84,6 +84,10 @@ def show_homepage(df, selected_location, start_longitude, start_latitude):
     if distance_info:
         sorted_items = sorted(distance_info, key=lambda x: x['distance'])
         top1 = sorted_items[0]
+        article_name = top1.get("articleName", "이름 없음")
+        tag_list = top1.get("tagList", "")
+        tag_elements = " ".join([f"<span style='background:#e0e0ff;padding:3px 8px;border-radius:6px;margin-right:4px;font-size:13px;'>{t}</span>"for t in tag_list])
+
         st.markdown(f"""
             <div style="
                 background-color: #f5f5fa;
@@ -93,11 +97,11 @@ def show_homepage(df, selected_location, start_longitude, start_latitude):
                 box-shadow: 1px 1px 6px rgba(0,0,0,0.1);
                 font-family: 'Segoe UI';
             ">
-                <h4 style="margin-bottom: 5px;">📌 Top 1 매물 요약</h4>
+                <h4 style="margin-bottom: 5px;">📍가장 가까운 매물을 찾았어요! 🎉🙌</h4>
                 <p><strong>🆔 매물 번호:</strong> {top1["article_no"]}<br>
                 <strong>📏 거리:</strong> {top1["distance"]:.4f} km<br>
-                <strong>🏷️ 이름:</strong> {top1["articleName"]}<br>
-                <strong>💬 특징:</strong> {top1["tagList"]}</p>
+                <strong>🏷️ 이름:</strong> {article_name}<br>
+                <strong>💬 특징:</strong> {tag_elements}</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -209,6 +213,9 @@ def show_homepage(df, selected_location, start_longitude, start_latitude):
             거리 = "정보 없음"
             소요시간 = "정보 없음"
 
+        tag_list = selected_row.get("tagList", "")
+        tag_elements = " ".join([f"<span style='background:#e0f7fa;padding:3px 8px;border-radius:6px;margin-right:4px;font-size:13px;'>{t}</span>"for t in tag_list])
+
         with col1:
             st.markdown(
                     f"""
@@ -222,7 +229,7 @@ def show_homepage(df, selected_location, start_longitude, start_latitude):
                         <p>⏱️ 매물까지 소요 시간   <strong>{소요시간} 소요</strong></p>
                         <p>📅 확인일자           <strong>{selected_row["articleConfirmYmd"][:4]}년 {selected_row["articleConfirmYmd"][4:6]}월 {selected_row["articleConfirmYmd"][6:]}일</strong></p>
                         <p>🧑‍💼 공인중개사         <strong>{selected_row["realtorName"]}</strong></p>
-                        <p>✨<strong>{", ".join(selected_row["tagList"])}</strong></p> 
+                        <p>✨<strong>{tag_elements}</strong></p> 
                         <p>🌟<strong>{feature_string}</strong></p>    
                     </div>
                     """,
