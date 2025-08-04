@@ -103,52 +103,62 @@ def save_to_csv(all_data, filename_c):
 
 @st.cache_data
 def crawling(key,rP_M,rP_m,p_M,p_m):
-    # './data/cortar.json' 파일은 배포 시점에 포함되어 있어야 합니다.
+
     with open('./data/cortar.json','r',encoding='utf-8') as file:
         co_data = json.load(file)
 
-    cortar_no = co_data.get(key,None)
+    # #임의로 넣은 값이며 구현 때 파라미터로 메인에서 받아올 값들입니다!
+    # key='서울특별시 종로구 낙원동'  #동
+    # rP_M ='90'                  #최대 월세
+    # rP_m = '0'                  #최소 월세
+    # p_M = '500'                 #최대 보증금
+    # p_m ='0'                    #최소 보증금
+
+    cortar_no = (co_data.get(key,None)) #메인에서 받은 Key의 지역코드 반환
+
+    filename_j = f'land_data.json'
+    filename_c = f'land_data.csv'
 
     try:
-        all_articles = []
-        for page in range(1, 101):
+        all_articles = []  # 전체 페이지의 데이터를 저장할 리스트
+
+        for page in range(1, 101): # Increased page range, but will stop if no more articles
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {page}페이지 데이터 수집 중...")
+
+            # API에서 데이터 가져오기
             data = get_real_estate_data(cortar_no,rP_M,rP_m,p_M,p_m,page)
+
             if data is None:
                 print(f"데이터를 가져오는 데 실패했습니다. {page}페이지에서 중단합니다.")
                 break
+
+            # 페이지의 매물 목록 가져오기
             articles = data.get('articleList', [])
+
+            # 매물이 없으면 반복 중단
             if not articles:
                 print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {page-1}페이지까지 수집 완료 (더 이상 데이터가 없습니다)")
                 break
+
+            # 전체 리스트에 추가
             all_articles.extend(articles)
-            time.sleep(1)
 
+
+            # 서버 부하를 줄이기 위한 딜레이
+            time.sleep(1) # Be mindful of rate limits
+
+        # 전체 데이터를 json로 저장
         if all_articles:
-            # 임시 디렉토리를 사용하여 파일 저장
-            with tempfile.TemporaryDirectory() as tmpdir:
-                filename_j = os.path.join(tmpdir, 'land_data.json')
-                filename_c = os.path.join(tmpdir, 'land_data.csv')
+            save_to_json(all_articles, filename_j)
+            save_to_csv(all_articles, filename_c)
+            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 전체 {len(all_articles)}개의 매물 데이터가 {filename_j}, {filename_c}에 저장되었습니다.")
 
-                # JSON 파일 저장
-                with codecs.open(filename_j, 'w', encoding='utf-8') as f:
-                    json.dump(all_articles, f, ensure_ascii=False, indent=4)
-                print(f"데이터가 '{filename_j}'에 JSON 형식으로 임시 저장되었습니다.")
-                
-                # CSV 파일 저장
-                df = pd.DataFrame(all_articles)
-                df.to_csv(filename_c, index=False, encoding='utf-8-sig')
-                print(f"데이터가 '{filename_c}'에 CSV 형식으로 임시 저장되었습니다.")
-            
-            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 전체 {len(all_articles)}개의 매물 데이터가 임시로 저장되었습니다.")
         else:
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 수집할 매물 데이터가 없습니다.")
-        
+
         return all_articles
-        
+
     except Exception as e:
         print(f"오류가 발생했습니다: {str(e)}")
-        return []
-
 # if __name__ == "__main__":
 #     main()
