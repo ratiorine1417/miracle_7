@@ -38,7 +38,7 @@ def show_homepage(df, selected_location):
     marker_locations = [[listing["latitude"], listing["longitude"]] for listing in df]
 
     # 지도 표출
-    map = folium.Map(location=map_center, zoom_start=15,max_zoom=100)
+    map = folium.Map(location=map_center, zoom_start=13)
 
 
     # 크롤링된 매물들 처리
@@ -104,51 +104,78 @@ def show_homepage(df, selected_location):
 
     grid_options = builder.build()
 
-    grid_response = AgGrid(grid_df, gridOptions=grid_options)
+    grid_response = AgGrid(sorted_df, gridOptions=grid_options, update_mode='SELECTION_CHANGED')
 
-    selected_rows = grid_response.get('selected_rows')
-
-    if selected_rows is not None and not selected_rows.empty:
-        selected = selected_rows.iloc[0]
-        print(selected)
+    selected_data = grid_response.get('selected_rows', [])
 
 
+    if isinstance(selected_data, pd.DataFrame) and not selected_data.empty:
+        selected_row = selected_data.iloc[0].to_dict()
+        
+        # 로고와 타이틀을 한 줄에 배치
+        col_logo, col_title = st.columns([1, 4])
+        with col_logo:
+            st.image("./data/home.png", width=200)
+        with col_title:
+            st.header("               🏠 매물 상세 정보")
 
-    # ---------------------
-    # 매물 상세 정보 모달 구성 
-    # ---------------------
-    st.subheader("🏠 매물 상세 보기")
+        st.markdown("---")
+        
+        # 주요 정보를 2개의 열로 나누어 배치
+        st.subheader(selected_row.get('articleName', '정보 없음'))
+        
+        col1, col2 = st.columns([2, 3])
+        
+        with col1:
+            st.markdown(f"**매물유형**: {selected_row.get('realEstateTypeName', '정보 없음')}")
+            st.markdown(f"**거래유형**: {selected_row.get('tradeTypeName', '정보 없음')}")
+            st.markdown(f"**보증금/월세**: {selected_row.get('sameAddrMaxPrc', '정보 없음')}")
+            st.markdown(f"**중개사무소**: {selected_row.get('realtorName', '정보 없음')}")
+        
+        with col2:
+            st.markdown(f"**공급/전용면적**: {selected_row.get('area1', '정보 없음')}㎡/{selected_row.get('area2', '정보 없음')}㎡")
+            st.markdown(f"**방향**: {selected_row.get('direction', '정보 없음')}")
+            st.markdown(f"**층수**: {selected_row.get('floorInfo', '정보 없음')}")
+            st.markdown(f"**확인일자**: {selected_row.get('articleConfirmYmd', '정보 없음')}")
+        
+        st.markdown("---")
+        
+        # 매물 특징을 강조하는 컨테이너
+        with st.container(border=True):
+            st.subheader("매물 특징")
+            
+            # articleFeatureDesc 키가 없을 경우 None 대신 빈 문자열을 반환하도록 수정
+            feature_string = selected_row.get('articleFeatureDesc', '')
+            
+            # feature_string이 유효한(비어있지 않은) 문자열인지 확인
+            if feature_string:
+                # 쉼표(,)를 기준으로 단어들을 분리하고 각 단어의 앞뒤 공백을 제거
+                features_list = [f.strip() for f in feature_string.split(',') if f.strip()]
+                
+                # 목록이 비어있지 않으면 쉼표로 연결하여 출력
+                if features_list:
+                    connected_features = ", ".join(features_list)
+                    st.write(f"{connected_features}")
+                else:
+                    # 목록이 비어있을 경우
+                    st.write("정보 없음")
+            else:
+                # feature_string 자체가 비어있거나 None일 경우
+                st.write("정보 없음")
 
-    # for sort_item in sorted_df:
-    #     if not sort_item.empty:
-    #         select_house = st.selectbox("매물 선택", sort_item['sameAddrMaxPrc'].tolist())
-    #         selected_df = sort_item[sort_item['sameAddrMaxPrc'] == select_house]
+        tag_list = selected_row.get('tagList', [])
+        if tag_list:
+            tags = " ".join([f'` #{tag}`' for tag in tag_list])
+            st.markdown(f"**태그**: {tags}")
+        
+        st.markdown("---")
 
-    #         if not selected_df.empty:
-    #             info_house = selected_df.iloc[0]
-    #             with st.expander("매물 상세 정보 보기"):
-    #                 st.write("📞 주변 공인중개사: 02-1234-5678")
-    #         else:
-    #             st.warning("해당 매물 정보가 없습니다.")
-    #     else:
-    #         st.info("조건에 맞는 매물이 없습니다.")
-
-        # if not sort_item.empty:
-        #     select_house = st.selectbox("매물 선택", sort_item['주소'].tolist())
-        #     selected_df = sort_item[sort_item['주소'] == select_house]
-
-        #     if not selected_df.empty:
-        #         info_house = selected_df.iloc[0]
-        #         with st.expander(f"{info_house['주소']} 상세 정보 보기"):
-        #             st.write(f"📍 위치: {info_house['지역']} - {info_house['주소']}")
-        #             st.write(f"💰 가격: {info_house['가격']}만원")
-        #             st.write(f"📐 면적: {info_house['면적']}㎡")
-        #             st.write(f"🚪 방수: {info_house['방수']} / 층수: {info_house['층']}")
-        #             st.write(f"🔥 난방: {info_house['난방']} / 🛗 엘리베이터: {info_house['엘리베이터']}")
-        #             st.image("https://via.placeholder.com/300x200.png?text=매물+이미지", caption="샘플 이미지")
-        #             st.write("📞 주변 공인중개사: 02-1234-5678")
-        #     else:
-        #         st.warning("해당 매물 정보가 없습니다.")
-        # else:
-        #     st.info("조건에 맞는 매물이 없습니다.")
-
+        link = selected_row.get('cpPcArticleUrl', None)
+        if link:
+            # 링크 버튼을 중앙에 배치
+            col_empty1, col_btn, col_empty2 = st.columns([1, 2, 1])
+            with col_btn:
+                st.link_button("매물 상세 페이지 바로가기", link, type="primary", use_container_width=True)
+    else:
+        st.info("위쪽 리스트에서 매물을 선택해주세요.")
+        st.image("./data/not_home.png", width=500)

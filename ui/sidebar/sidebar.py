@@ -1,6 +1,9 @@
 import streamlit as st
 from pathlib import Path
+import requests
 import json
+# 행정안전부 도로명주소 검색 API 키 (~20251031까지)
+API_KEY = "	devU01TX0FVVEgyMDI1MDgwMjE1MzU0NTExNjAxNTA="
 
 def is_unit(code):
     code_str = str(code)
@@ -35,13 +38,57 @@ def address_maker(user_input):
  
     return address, matched_dict
 
+def search_address(keyword):
+    url = "https://www.juso.go.kr/addrlink/addrLinkApi.do"
+    params = {
+        "confmKey": API_KEY,
+        "keyword": keyword,
+        "resultType": "json"
+    }
+    res = requests.get(url, params=params)
+
+    return res.json()
+
+def init_finding_path():
+    st.sidebar.title("🔍 필터링 검색")
+
+    st.sidebar.subheader("🏢 회사/사무실 주소를 기입해주세요.")
+    company_input = st.sidebar.text_input("📍 위치를 입력하세요.", placeholder="주소 입력 후 Enter")
+    deposit_range = (0, 0)
+    rent_range    = (0, 0)
+    flag          = False
+    if company_input:
+        respond_json = search_address(company_input)
+        address_json = respond_json["results"]["juso"]
+        
+        if address_json:
+            st.sidebar.subheader(f"🔍 관련 주소 결과")
+            addr_options = ["선택해주세요."] + [
+                f"{addr['roadAddr']}"
+                for addr in address_json
+            ]
+            company_input = st.sidebar.selectbox("📍 관련 주소 목록", addr_options)
+
+            st.sidebar.subheader("💰 보증금 범위")
+            deposit_range = st.sidebar.slider("단위: 만원", 0, 5000, (500, 2000), step=100, key="sidebar_deposit_slider")
+            st.sidebar.subheader("💸 월세 범위")
+            rent_range = st.sidebar.slider("단위: 만원", 10, 200, (30, 80), step=5, key="sidebar_rent_slider")
+            
+            flag = True # 크롤링 여부
+        else:
+           st.sidebar.warning("주소를 상세히 입력해주세요. (예: 대방동)")
+           flag = False # 크롤링 여부
+
+    return company_input, deposit_range, rent_range, flag
 
 def init_sidebar():
     #st.sidebar.image("./image/miracle_7_logo.png", width=200)
     st.sidebar.title("🔍 필터링 검색")
 
-    deposit_range = st.sidebar.slider("💰 보증금 범위 (만원)", 0, 5000, (500, 2000), step=100, key="sidebar_deposit_slider")
-    rent_range = st.sidebar.slider("💸 월세 범위 (만원)", 10, 200, (30, 80), step=5, key="sidebar_rent_slider")
+    st.sidebar.subheader("💰 보증금 범위")
+    deposit_range = st.sidebar.slider("단위: 만원", 0, 5000, (500, 2000), step=100, key="sidebar_deposit_slider")
+    st.sidebar.subheader("💸 월세 범위")
+    rent_range = st.sidebar.slider("단위: 만원", 10, 200, (30, 80), step=5, key="sidebar_rent_slider")
 
     st.sidebar.subheader("📍 지역 선택")
     
@@ -55,7 +102,7 @@ def init_sidebar():
     """
     <style>
     text_input {
-        resize: none !important;
+        res ize: none !important;
     }
     </style>
     """,
