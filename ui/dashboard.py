@@ -113,11 +113,8 @@ def show_homepage(df, selected_location):
         selected_row = selected_data.iloc[0].to_dict()
         
         # 로고와 타이틀을 한 줄에 배치
-        col_logo, col_title = st.columns([1, 4])
-        with col_logo:
-            # st.image 함수를 사용하여 로고를 삽입합니다. 로고 이미지 경로를 실제 파일 경로로 변경하세요.
-            # st.image("logo.png", width=60)
-            st.write("로고자리") # 로고 이미지 없으면 텍스트로 대체
+        col_title = st.columns([1, 4])
+    
         with col_title:
             st.header("🏠 매물 상세 정보")
 
