@@ -86,7 +86,11 @@ def get_car_route(startX, startY, endX, endY, appKey):
         "startName": "출발지", "endName": "도착지",
         "searchOption": 0, "trafficInfo": "Y"
     }
+<<<<<<< HEAD
     response = requests.post(url, headers=headers, json=body, timeout=10)
+=======
+    response = requests.post(url, headers=headers, json=body)
+>>>>>>> 8f26912c14d56e556fa94c3c4f8b8c6aca81d7dc
 
     if response.status_code == 200:
         try:
@@ -100,7 +104,11 @@ def get_coords(address, kakao_api_key):
     url = "https://dapi.kakao.com/v2/local/search/address.json"
     headers = {"Authorization": f"KakaoAK {kakao_api_key}"}
     params = {"query": address}
+<<<<<<< HEAD
     response = requests.get(url, headers=headers, params=params, timeout=10)
+=======
+    response = requests.get(url, headers=headers, params=params)
+>>>>>>> 8f26912c14d56e556fa94c3c4f8b8c6aca81d7dc
     result = response.json()
     if result['documents']:
         x = result['documents'][0]['x']  # 경도

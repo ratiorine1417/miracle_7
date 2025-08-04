@@ -1,3 +1,7 @@
+배포링크: https://miracle7back-gpvpn7e7hssfolzpkjipxy.streamlit.app/
+
+
+
 최대현, 전예진, 이유진 - 데이터 전처리, 수집
 
 crawling.py: 웹 크롤링을 위한 코드

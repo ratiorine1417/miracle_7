@@ -113,13 +113,9 @@ def show_main_page():
     selected_location, deposit_range, rent_range, coords = init_sidebar()
 
     # 필터링 적용
-    a = convert_to_won(deposit_range[1])
-    b = convert_to_won(deposit_range[0])
-    c = convert_to_won(rent_range[1])
-    d = convert_to_won(rent_range[0])
     filtered_df = crawling(selected_location, rent_range[1], rent_range[0], deposit_range[1], deposit_range[0])
-    print(f"{selected_location}, {a}, {b}, {c}, {d}")
-    st.title("🏡 7번방의 기적")
+
+    st.title("🏡 7번 방의 기적")
 
     # 지역 이름 길이에 따라 너비 가중치 계산
     location_length = len(selected_location) 

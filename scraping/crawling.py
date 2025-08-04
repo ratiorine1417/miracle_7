@@ -7,6 +7,8 @@ import time
 import pandas as pd
 from bs4 import BeautifulSoup 
 import streamlit as st
+import tempfile
+import os
 
 
 def get_real_estate_data(cortar_no, rP_M, rP_m, p_M, p_m, page=1):
@@ -100,6 +102,7 @@ def save_to_csv(all_data, filename_c):
 
 @st.cache_data
 def crawling(key,rP_M,rP_m,p_M,p_m):
+
     with open('./data/cortar.json','r',encoding='utf-8') as file:
         co_data = json.load(file)
 
@@ -139,6 +142,7 @@ def crawling(key,rP_M,rP_m,p_M,p_m):
             # 전체 리스트에 추가
             all_articles.extend(articles)
 
+
             # 서버 부하를 줄이기 위한 딜레이
             time.sleep(1) # Be mindful of rate limits
 
@@ -147,11 +151,13 @@ def crawling(key,rP_M,rP_m,p_M,p_m):
             save_to_json(all_articles, filename_j)
             save_to_csv(all_articles, filename_c)
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 전체 {len(all_articles)}개의 매물 데이터가 {filename_j}, {filename_c}에 저장되었습니다.")
+
         else:
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 수집할 매물 데이터가 없습니다.")
+
         return all_articles
+
     except Exception as e:
         print(f"오류가 발생했습니다: {str(e)}")
-
 # if __name__ == "__main__":
 #     main()
