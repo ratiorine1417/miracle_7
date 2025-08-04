@@ -1,3 +1,5 @@
+# pages/월세예측기.py
+
 import streamlit as st
 import pandas as pd
 import json
@@ -23,78 +25,74 @@ df['floor'] = df['floorInfo'].str.extract(r'(\d+)').astype(float)
 df['rent'] = pd.to_numeric(df['rentPrc'], errors='coerce')
 df['deposit'] = pd.to_numeric(df['dealOrWarrantPrc'], errors='coerce')
 
+# 인코딩 맵
 house_type_map = {v: i for i, v in enumerate(df['realEstateTypeName'].dropna().unique())}
 direction_map = {v: i for i, v in enumerate(df['direction'].dropna().unique())}
 trade_type_map = {"월세": 0, "전세": 1}
 
+# 인코딩 컬럼 추가
 df['house_type'] = df['realEstateTypeName'].map(house_type_map)
 df['direction_code'] = df['direction'].map(direction_map)
 df['trade_type_code'] = df['tradeTypeName'].map(trade_type_map)
 
 df = df.dropna(subset=['floor', 'house_type', 'direction_code', 'trade_type_code', 'rent', 'latitude', 'longitude'])
 
-# 세션 초기화
+# st.session_state 초기화
 if "predicted_result" not in st.session_state:
     st.session_state.predicted_result = None
 
-# 사용자 입력
-with st.form("predict_form"):
-    st.subheader("🏠 예측 정보 입력")
-    col1, col2 = st.columns(2)
-    with col1:
-        floor = st.number_input("층수", min_value=1, max_value=50, value=3)
-        house_type = st.selectbox("집 종류", list(house_type_map.keys()))
-    with col2:
-        direction = st.selectbox("방향", list(direction_map.keys()))
-        trade_type = st.selectbox("거래 유형", ["월세", "전세"])
+# 👉 사이드바 입력 영역
+st.sidebar.subheader("📋 예측 정보 입력")
+floor = st.sidebar.number_input("층수", min_value=1, max_value=50, value=3)
+direction = st.sidebar.selectbox("방향", list(direction_map.keys()))
+house_type = st.sidebar.selectbox("집 종류", list(house_type_map.keys()))
+trade_type = st.sidebar.selectbox("거래 유형", ["월세", "전세"])
 
-    submitted = st.form_submit_button("📈 예측하기")
+predict_button = st.sidebar.button("📈 예측하기")
 
-# 예측 실행
-if submitted:
+# 👉 예측 실행
+if predict_button:
     try:
         x_input = np.array([[floor, house_type_map[house_type], direction_map[direction], trade_type_map[trade_type]]])
 
         with open("models/rent_model.pkl", "rb") as f:
-            model, loaded_direction_map, loaded_house_type_map, loaded_trade_type_map = pickle.load(f)
+            model, direction_map, house_type_map, trade_type_map = pickle.load(f)
 
         y_pred = int(model.predict(x_input)[0][0])
-        compare_col = 'rent' if trade_type == "월세" else 'deposit'
-        filtered = df[
-            (df['house_type'] == house_type_map[house_type]) &
-            (df['direction_code'] == direction_map[direction]) &
-            (df['trade_type_code'] == trade_type_map[trade_type])
-        ].copy()
-
-        # 예측 결과 저장
         st.session_state.predicted_result = {
             "y_pred": y_pred,
-            "filtered": filtered,
-            "compare_col": compare_col,
+            "house_type": house_type,
+            "direction": direction,
             "trade_type": trade_type
         }
 
     except Exception as e:
-        st.session_state.predicted_result = {"error": str(e)}
+        st.error(f"❌ 예측 실패: {e}")
 
-# 예측 결과 출력
-result = st.session_state.predicted_result
-if result:
-    if "error" in result:
-        st.error(f"❌ 예측 실패: {result['error']}")
-    else:
-        st.success(f"✅ 예측된 {result['trade_type']} 금액은 약 **{result['y_pred']:,}만원** 입니다")
+# 👉 결과 출력
+if st.session_state.predicted_result:
+    result = st.session_state.predicted_result
+    y_pred = result["y_pred"]
+    st.success(f"✅ 예측된 {result['trade_type']} 금액은 약 **{y_pred:,}만원** 입니다")
 
-        st.subheader("📍 유사 조건 매물 지도")
-        m = folium.Map(location=[37.5, 127.0], zoom_start=11)
-        for _, row in result["filtered"].iterrows():
-            folium.Marker(
-                location=[row['latitude'], row['longitude']],
-                popup=f"{int(row[result['compare_col']])}만원"
-            ).add_to(m)
-        st_folium(m, width=700, height=500)
+    compare_col = 'rent' if result["trade_type"] == "월세" else 'deposit'
+    filtered = df[
+        (df['house_type'] == house_type_map[result["house_type"]]) &
+        (df['direction_code'] == direction_map[result["direction"]]) &
+        (df['trade_type_code'] == trade_type_map[result["trade_type"]])
+    ].copy()
 
-        if not result["filtered"].empty:
-            avg_price = int(result["filtered"][result["compare_col"]].mean())
-            st.metric("💡 예측값", f"{result['y_pred']}만원")
-            st.metric("🏘 실제 매물 평균", f"{avg_price}만원")
+    st.subheader("📍 유사 조건 매물 지도")
+    m = folium.Map(location=[37.5, 127.0], zoom_start=11)
+    for _, row in filtered.iterrows():
+        folium.Marker(
+            location=[row['latitude'], row['longitude']],
+            popup=f"{int(row[compare_col])}만원",
+            icon=folium.Icon(color='blue')
+        ).add_to(m)
+    st_folium(m, width=1200, height=500)
+
+    if not filtered.empty:
+        avg_price = int(filtered[compare_col].mean())
+        st.metric("💡 예측값", f"{y_pred}만원")
+        st.metric("🏘 실제 매물 평균", f"{avg_price}만원")
