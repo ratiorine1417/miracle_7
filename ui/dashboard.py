@@ -108,17 +108,7 @@ def show_homepage(df, selected_location):
 
     selected_data = grid_response.get('selected_rows', [])
 
-    st.markdown("""
-    <style>
-        .stApp > header {
-            display: none;
-        }
-        div.stButton > button {
-            background-color: #4CAF50;
-            color: white;
-        }
-    </style>
-    """, unsafe_allow_html=True)
+
 
     if isinstance(selected_data, pd.DataFrame) and not selected_data.empty:
         selected_row = selected_data.iloc[0].to_dict()
