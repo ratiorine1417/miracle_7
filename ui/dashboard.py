@@ -10,6 +10,7 @@ import folium
 from streamlit.components.v1 import html
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from geopy.geocoders import Nominatim
+import math
 import json
 from ui.sidebar.page_of_distance_per_method import format_address, convert_distance_time, get_car_route, get_walk_route, get_coords, get_route
 # kakao API 키
@@ -17,48 +18,50 @@ kakao_api_key = "fb1bd569e343b2b3821ea18ec1694b74"
 # TMAP API 키
 tmap_api_key = "KXgnElYbnf9P4rPyZzanN91cHMyScabF1ZY4ifZR"
 
-def show_homepage(df, selected_location, start_longitude, start_latitude):
-    # TODO: 이제 로그인 시 사용자마다 값을 저장할수있게 로직을 처리해보자! 20250731 백두현현
-    #init_db()
+def haversine_distance(addr1_x, addr1_y, addr2_x, addr2_y, articleNo, articleName, tagList):
+    r = 6371
+    # 라디안 변환
+    dlat = math.radians(addr2_x - addr1_x)
+    dlon = math.radians(addr2_y - addr1_y)
 
+    # 거리 계산 공식
+    val = math.sin(dlat/2)**2 + math.cos(math.radians(addr1_x)) * math.cos(math.radians(addr2_x)) * math.sin(dlon/2)**2
+    result = 2 * r * math.atan2(math.sqrt(val), math.sqrt(1 - val))
+
+
+    return {"article_no": articleNo, "distance": result, "articleName": articleName, "tagList": tagList}
+
+def show_homepage(df, selected_location, start_longitude, start_latitude):
     # ---------------------
     # 지도 기반 시각화
     # ---------------------
     st.subheader("🗺️ 지도 기반 매물 시각화")
 
-
-    center_longitude = float(df[0]["longitude"])
-    center_latitude  = float(df[0]["latitude"])
-    map_center = [center_latitude, center_longitude]
-
-    with open("./data/late.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    location_dict = {
-        entry["행정구역"]: (entry["위도"], entry["경도"])
-        for entry in data
-    }
-    center_latitude, center_longitude = location_dict[selected_location]
-    
-    map_center = [center_latitude, center_longitude]
+    map_center = [start_latitude, start_longitude]
     marker_locations = [[listing["latitude"], listing["longitude"]] for listing in df]
 
     # 지도 표출
-    map = folium.Map(location=map_center, zoom_start=13)
-
-
+    map = folium.Map(location=map_center, zoom_start=20)
+    distance_info = []
     # 크롤링된 매물들 처리
     for listing in df:
+        # 매물마다 직선거리 dict list
+        distance_info.append(haversine_distance(float(start_longitude), float(start_latitude), float(listing["longitude"]), float(listing["latitude"]), listing["articleNo"], listing["articleName"], listing["tagList"]))
+ 
         popup_html = f"""
                     <div style="width:auto; font-family:Arial; font-size:13px">
-                        <h4 style="margin-bottom:5px;">매물 정보</h4>
+                        <h4 style="margin-bottom:2px;">매물번호</h4>
+                        {listing["articleNo"]}<br>
+                        <h4 style="margin-bottom:2px;">매물명</h4> 
+                        {listing["articleName"]}<br>
+                        <h4 style="margin-bottom:2px;">매물 정보</h4>
                         {listing["tradeTypeName"]} {listing["sameAddrMaxPrc"]}<br>
-                        <h4 style="margin-top:10px;">매물 특징</h4>
+                        <h4 ">매물 특징</h4>
                         {listing["tagList"]}
                     </div>
                     """
         folium.Marker([listing["latitude"], listing["longitude"]], popup=folium.Popup(popup_html, max_width=500), tooltip="클릭해서 매물보기").add_to(map)
-    
+
     popup_html_start_loc = f"""
                     <div style="width:auto; font-family:Arial; font-size:13px">
                         <h4 style="margin-bottom:5px;">회사/사무실 위치</h4>
@@ -77,6 +80,26 @@ def show_homepage(df, selected_location, start_longitude, start_latitude):
     html(m_html, height=500)
 
     st.subheader("📋 매물 리스트")
+    top1 = 0.0
+    if distance_info:
+        sorted_items = sorted(distance_info, key=lambda x: x['distance'])
+        top1 = sorted_items[0]
+        st.markdown(f"""
+            <div style="
+                background-color: #f5f5fa;
+                border-radius: 12px;
+                padding: 15px;
+                margin-bottom: 10px;
+                box-shadow: 1px 1px 6px rgba(0,0,0,0.1);
+                font-family: 'Segoe UI';
+            ">
+                <h4 style="margin-bottom: 5px;">📌 Top 1 매물 요약</h4>
+                <p><strong>🆔 매물 번호:</strong> {top1["article_no"]}<br>
+                <strong>📏 거리:</strong> {top1["distance"]:.4f} km<br>
+                <strong>🏷️ 이름:</strong> {top1["articleName"]}<br>
+                <strong>💬 특징:</strong> {top1["tagList"]}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
     sort_options = {
         '건물명': 'articleName',
@@ -191,6 +214,7 @@ def show_homepage(df, selected_location, start_longitude, start_latitude):
                     f"""
                     <div style="background-color: #f7f9fc; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); padding:20px;">
                         <h2>🏠 {selected_row["articleName"]}</h2>
+                        <p>⭐ 건물 번호          <strong>{selected_row["articleNo"]}</strong></p> 
                         <p>🧭 채광 방향           <strong>{selected_row["direction"]}</strong></p>                                  
                         <p>🏢 층수(복층 여부)     <strong>{selected_row["floorInfo"]}  ({"복층" if "복층" in selected_row["tagList"] else "일반형"}) </strong></p>
                         <p>📐 매물의 면적         <strong>{selected_row["area1"]}㎡ / {selected_row["area2"]}㎡</strong></p>
