@@ -133,4 +133,4 @@ def show_homepage(df, selected_location):
         else:
             st.write("📌 선택된 행이 없습니다.")
     else:
-        st.write("📌 선택된 행들:", selected_data)
+        st.info("위쪽 리스트에서 매물을 선택해주세요.")
