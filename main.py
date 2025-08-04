@@ -14,10 +14,10 @@ st.set_page_config(
 )
 
 #사용자 입력값 사이드바로부터 받기
-selected_location, deposit_range, rent_range = init_sidebar()
-
+selected_location, deposit_range, rent_range, coords = init_sidebar()
 
 # 필터링 적용
+
 filtered_df = crawling(selected_location, rent_range[1], rent_range[0], deposit_range[1], deposit_range[0])
 
 st.title("🏡 7번 방의 기적")
@@ -36,7 +36,7 @@ col3.metric("💸 월세", f"{rent_range[0]}~{rent_range[1]}")
 
 # 메인화면 불러오기
 if filtered_df:
-    show_homepage(filtered_df, selected_location)
+    show_homepage(filtered_df, selected_location, coords[0], coords[1]) # coords[0] : longitude, coords[1] : latitude
 else:
     st.markdown(f"""
         <div style="
