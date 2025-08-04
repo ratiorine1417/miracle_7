@@ -113,10 +113,11 @@ def show_homepage(df, selected_location):
         selected_row = selected_data.iloc[0].to_dict()
         
         # 로고와 타이틀을 한 줄에 배치
-        col_title = st.columns([1, 4])
-    
+        col_logo, col_title = st.columns([1, 4])
+        with col_logo:
+            st.image("./data/home.png", width=200)
         with col_title:
-            st.header("🏠 매물 상세 정보")
+            st.header("               🏠 매물 상세 정보")
 
         st.markdown("---")
         
@@ -143,21 +144,28 @@ def show_homepage(df, selected_location):
         with st.container(border=True):
             st.subheader("매물 특징")
             
-            # '역세권 풀옵션 신축' 같은 문자열이라고 가정
-            feature_string = selected_row.get('articleFeatureDesc', '정보 없음')
+            # articleFeatureDesc 키가 없을 경우 None 대신 빈 문자열을 반환하도록 수정
+            feature_string = selected_row.get('articleFeatureDesc', '')
             
-            if feature_string != '정보 없음':
-                # 띄어쓰기를 기준으로 단어들을 분리
-                features_list = feature_string.split()
-                # 쉼표와 공백으로 다시 연결
-                connected_features = ", ".join(features_list)
-                st.write(f"{connected_features}")
+            # feature_string이 유효한(비어있지 않은) 문자열인지 확인
+            if feature_string:
+                # 쉼표(,)를 기준으로 단어들을 분리하고 각 단어의 앞뒤 공백을 제거
+                features_list = [f.strip() for f in feature_string.split(',') if f.strip()]
+                
+                # 목록이 비어있지 않으면 쉼표로 연결하여 출력
+                if features_list:
+                    connected_features = ", ".join(features_list)
+                    st.write(f"{connected_features}")
+                else:
+                    # 목록이 비어있을 경우
+                    st.write("정보 없음")
             else:
-                st.write(feature_string)
+                # feature_string 자체가 비어있거나 None일 경우
+                st.write("정보 없음")
 
         tag_list = selected_row.get('tagList', [])
         if tag_list:
-            tags = " ".join([f'`: {tag}`' for tag in tag_list])
+            tags = " ".join([f'` #{tag}`' for tag in tag_list])
             st.markdown(f"**태그**: {tags}")
         
         st.markdown("---")
@@ -170,3 +178,4 @@ def show_homepage(df, selected_location):
                 st.link_button("매물 상세 페이지 바로가기", link, type="primary", use_container_width=True)
     else:
         st.info("위쪽 리스트에서 매물을 선택해주세요.")
+        st.image("./data/not_home.png", width=500)
