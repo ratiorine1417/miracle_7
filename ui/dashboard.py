@@ -58,6 +58,7 @@ def show_homepage(df, selected_location, start_longitude, start_latitude):
                         {listing["tradeTypeName"]} {listing["sameAddrMaxPrc"]}<br>
                         <h4 ">매물 특징</h4>
                         {listing["tagList"]}
+                
                     </div>
                     """
         folium.Marker([listing["latitude"], listing["longitude"]], popup=folium.Popup(popup_html, max_width=500), tooltip="클릭해서 매물보기").add_to(map)
@@ -86,9 +87,10 @@ def show_homepage(df, selected_location, start_longitude, start_latitude):
         top1 = sorted_items[0]
         article_name = top1.get("articleName", "이름 없음")
         tag_list = top1.get("tagList", "")
-        top1_link = top1.get('cpPcArticleUrl', None)
+        top1_link = top1_link = next((item.get("cpPcArticleUrl") for item in df if item.get("articleNo") == top1.get("article_no")), "정보 없음")
         rent = next((item.get("sameAddrMaxPrc") for item in df if item.get("articleNo") == top1.get("article_no")), "정보 없음")        
         tag_elements = " ".join([f"<span style='background:#e0e0ff;padding:3px 8px;border-radius:6px;margin-right:4px;font-size:13px;'>{t}</span>"for t in tag_list])
+    
 
         st.markdown(f"""
             <div style="
@@ -104,13 +106,18 @@ def show_homepage(df, selected_location, start_longitude, start_latitude):
                 <strong>📏 거리:</strong> {top1["distance"]:.4f} km<br>
                 <strong>🏷️ 이름:</strong> {article_name}<br>
                 <strong>💬 특징:</strong> {tag_elements}</p>
-                <strong>💬 보증금/월세:</strong> {rent}</p>             
+                <strong>💬 보증금/월세:</strong> {rent}</p>
+                <a href="{top1_link}" target="_blank" style="
+                    text-decoration: none; 
+                    background-color: #007bff; 
+                    color: white; 
+                    padding: 8px 16px; 
+                    border-radius: 8px; 
+                    display: inline-block;
+                ">매물 상세 페이지 바로가기</a>
             </div>
             """, unsafe_allow_html=True)
-        if top1_link:
-            col_empty1, col_btn, col_empty2 = st.columns([1, 2, 1])
-            with col_btn:
-                st.link_button("매물 상세 페이지 바로가기", top1_link, type="primary", use_container_width=True)
+
     sort_options = {
         '건물명': 'articleName',
         '보증금/월세': 'sameAddrMaxPrc',
