@@ -5,8 +5,10 @@ from ui.sidebar.sidebar import init_sidebar
 from scraping.crawling import crawling
 
 
+
 st.set_page_config(
     page_title="7번방의 기적",
+    page_icon="image/miracle_7_logo.png",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
