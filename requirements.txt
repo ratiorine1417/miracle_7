@@ -1,0 +1,7 @@
+streamlit
+folium
+streamlit-modal
+scikit-learn
+streamlit-aggrid
+streamlit_authenticator
+geopy

@@ -51,7 +51,3 @@ else:
         </div>
         """, unsafe_allow_html=True)
 # 수정
-
-
-
-

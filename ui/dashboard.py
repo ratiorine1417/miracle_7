@@ -108,6 +108,17 @@ def show_homepage(df, selected_location):
 
     selected_data = grid_response.get('selected_rows', [])
 
+    st.markdown("""
+    <style>
+        .stApp > header {
+            display: none;
+        }
+        div.stButton > button {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
     if isinstance(selected_data, pd.DataFrame) and not selected_data.empty:
         selected_row = selected_data.iloc[0].to_dict()
@@ -172,10 +183,12 @@ def show_homepage(df, selected_location):
 
         link = selected_row.get('cpPcArticleUrl', None)
         if link:
-            # 링크 버튼을 중앙에 배치
+
             col_empty1, col_btn, col_empty2 = st.columns([1, 2, 1])
             with col_btn:
                 st.link_button("매물 상세 페이지 바로가기", link, type="primary", use_container_width=True)
+
+
     else:
         st.info("위쪽 리스트에서 매물을 선택해주세요.")
         st.image("./data/not_home.png", width=500)
