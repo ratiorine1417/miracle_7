@@ -111,4 +111,5 @@ def init_sidebar():
     else:
         st.sidebar.markdown("❌ 관련된 주소를 찾을 수 없어요.")
     
-    return user_input, deposit_range, rent_range, coords
+    return user_input, deposit_range, rent_range,  coords if coords else [None, None]
+
