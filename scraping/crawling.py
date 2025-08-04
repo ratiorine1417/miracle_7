@@ -83,7 +83,6 @@ def save_to_json(all_data, filename_j):
     if not filename_j.endswith('.json'):
         filename_j = filename_j.split('.')[0] + '.json'
     try:
-
         with codecs.open(f'./data/{filename_j}', 'w', encoding='utf-8') as f:
             json.dump(all_data, f, ensure_ascii=False, indent=4)
         print(f"데이터가 '{filename_j}'에 JSON 형식으로 저장되었습니다.")

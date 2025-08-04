@@ -2,8 +2,12 @@ import streamlit as st
 from pathlib import Path
 import requests
 import json
+from ui.sidebar.page_of_distance_per_method import get_coords
 # 행정안전부 도로명주소 검색 API 키 (~20251031까지)
 API_KEY = "	devU01TX0FVVEgyMDI1MDgwMjE1MzU0NTExNjAxNTA="
+
+# kakao API 키
+kakao_api_key = "fb1bd569e343b2b3821ea18ec1694b74"
 
 def is_unit(code):
     code_str = str(code)
@@ -49,37 +53,25 @@ def search_address(keyword):
 
     return res.json()
 
-def init_finding_path():
-    st.sidebar.title("🔍 필터링 검색")
 
-    st.sidebar.subheader("🏢 회사/사무실 주소를 기입해주세요.")
+def init_starting_path():
+    st.write("🏢 회사/사무실 주소를 기입해주세요.")
     company_input = st.sidebar.text_input("📍 위치를 입력하세요.", placeholder="주소 입력 후 Enter")
-    deposit_range = (0, 0)
-    rent_range    = (0, 0)
-    flag          = False
+
     if company_input:
-        respond_json = search_address(company_input)
-        address_json = respond_json["results"]["juso"]
-        
-        if address_json:
-            st.sidebar.subheader(f"🔍 관련 주소 결과")
-            addr_options = ["선택해주세요."] + [
-                f"{addr['roadAddr']}"
-                for addr in address_json
-            ]
-            company_input = st.sidebar.selectbox("📍 관련 주소 목록", addr_options)
-
-            st.sidebar.subheader("💰 보증금 범위")
-            deposit_range = st.sidebar.slider("단위: 만원", 0, 5000, (500, 2000), step=100, key="sidebar_deposit_slider")
-            st.sidebar.subheader("💸 월세 범위")
-            rent_range = st.sidebar.slider("단위: 만원", 10, 200, (30, 80), step=5, key="sidebar_rent_slider")
+            respond_json = search_address(company_input)
+            address_json = respond_json["results"]["juso"]
             
-            flag = True # 크롤링 여부
-        else:
-           st.sidebar.warning("주소를 상세히 입력해주세요. (예: 대방동)")
-           flag = False # 크롤링 여부
-
-    return company_input, deposit_range, rent_range, flag
+            if address_json:
+                st.sidebar.subheader(f"🔍 관련 주소 결과")
+                addr_options = ["선택해주세요."] + [
+                    f"{addr['roadAddr']}"
+                    for addr in address_json
+                ]
+                company_input = st.selectbox("📍 관련 주소 목록", addr_options)
+            else:
+                st.warning("주소를 상세히 입력해주세요. (예: 대방동)")
+    return company_input
 
 def init_sidebar():
     #st.sidebar.image("./image/miracle_7_logo.png", width=200)
@@ -90,51 +82,34 @@ def init_sidebar():
     st.sidebar.subheader("💸 월세 범위")
     rent_range = st.sidebar.slider("단위: 만원", 10, 200, (30, 80), step=5, key="sidebar_rent_slider")
 
-    st.sidebar.subheader("📍 지역 선택")
+    st.sidebar.subheader("📍 회사/사무실 위치 선택")
     
     user_input = st.sidebar.text_input("지역을 입력하세요.", placeholder="주소 입력 후 Enter")
 
-    addresses = []
+    coords = []
     if user_input:
-        addresses, addresses_dict = address_maker(user_input)
-    
-    st.sidebar.markdown(
-    """
-    <style>
-    text_input {
-        res ize: none !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-    )
+        respond_json = search_address(user_input)
+        address_json = respond_json["results"]["juso"]
+        print(address_json)
+        if address_json:
+                st.sidebar.subheader(f"🔍 관련 주소 결과")
+                addr_options = ["선택해주세요."] + [
+                    f"{addr["roadAddr"]}"
+                    for addr in address_json
+                ]
 
-    if addresses:
-        selected_location = st.sidebar.selectbox("📍 추천 주소를 선택하세요", addresses)
-        code = addresses_dict.get(selected_location)
+                user_input = st.sidebar.selectbox("📍 관련 주소 목록", addr_options)
+                coords = get_coords(user_input, kakao_api_key)
 
-        print(is_unit(code))
-        if is_unit(code):
-            # 선택된 주소를 꾸며서 출력
-            st.sidebar.markdown(
-                f"""
-                <div style="
-                    background-color:#e6f7ff;
-                    padding:10px;
-                    border-radius:8px;
-                    border-left:5px solid #3399ff;
-                    font-size:16px;
-                    color:#333;
-                ">
-                ✅ <strong>선택한 주소:</strong><br>{selected_location}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+                # 다시 for문 돌려서 해당하는 도로명이 있는 인덱스의 지번주소를 들고오기기
+                for addr in address_json:
+                    if addr["roadAddr"] == user_input:
+                         user_input = f"{addr['siNm']} {addr['sggNm']} {addr['emdNm']}"
         else:
-            st.warning("❗ 선택한 주소가 너무 간단해요. 자세한 지역 단위를 선택해주세요.")
+            st.warning("주소를 상세히 입력해주세요. (예: 대방동)")
+    
     else:
-        selected_location = ""
         st.sidebar.markdown("❌ 관련된 주소를 찾을 수 없어요.")
     
-    return selected_location, deposit_range, rent_range
+    return user_input, deposit_range, rent_range,  coords if coords else [None, None]
+
