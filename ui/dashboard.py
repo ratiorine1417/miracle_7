@@ -111,34 +111,65 @@ def show_homepage(df, selected_location):
 
     if isinstance(selected_data, pd.DataFrame) and not selected_data.empty:
         selected_row = selected_data.iloc[0].to_dict()
-        st.markdown("### 🏠 매물 상세 정보")
         
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.write(f"**매물명**: {selected_row.get('articleName', '정보 없음')}")
-            st.write(f"**매물유형**: {selected_row.get('realEstateTypeName', '정보 없음')}")
-            st.write(f"**거래유형**: {selected_row.get('tradeTypeName', '정보 없음')}")
-            st.write(f"**보증금/월세**: {selected_row.get('sameAddrMaxPrc', '정보 없음')}")
-            st.write(f"**중개사무소**: {selected_row.get('realtorName', '정보 없음')}")
-
-        with col2:
-            st.write(f"**공급/전용면적**: {selected_row.get('area1', '정보 없음')}㎡/{selected_row.get('area2', '정보 없음')}㎡")
-            st.write(f"**방향**: {selected_row.get('direction', '정보 없음')}")
-            st.write(f"**층수**: {selected_row.get('floorInfo', '정보 없음')}")
-            st.write(f"**확인일자**: {selected_row.get('articleConfirmYmd', '정보 없음')}")
+        # 로고와 타이틀을 한 줄에 배치
+        col_logo, col_title = st.columns([1, 4])
+        with col_logo:
+            # st.image 함수를 사용하여 로고를 삽입합니다. 로고 이미지 경로를 실제 파일 경로로 변경하세요.
+            # st.image("logo.png", width=60)
+            st.write("로고자리") # 로고 이미지 없으면 텍스트로 대체
+        with col_title:
+            st.header("🏠 매물 상세 정보")
 
         st.markdown("---")
         
-        st.write(f"**매물특징**: {selected_row.get('articleFeatureDesc', '정보 없음')}")
+        # 주요 정보를 2개의 열로 나누어 배치
+        st.subheader(selected_row.get('articleName', '정보 없음'))
         
+        col1, col2 = st.columns([2, 3])
+        
+        with col1:
+            st.markdown(f"**매물유형**: {selected_row.get('realEstateTypeName', '정보 없음')}")
+            st.markdown(f"**거래유형**: {selected_row.get('tradeTypeName', '정보 없음')}")
+            st.markdown(f"**보증금/월세**: {selected_row.get('sameAddrMaxPrc', '정보 없음')}")
+            st.markdown(f"**중개사무소**: {selected_row.get('realtorName', '정보 없음')}")
+        
+        with col2:
+            st.markdown(f"**공급/전용면적**: {selected_row.get('area1', '정보 없음')}㎡/{selected_row.get('area2', '정보 없음')}㎡")
+            st.markdown(f"**방향**: {selected_row.get('direction', '정보 없음')}")
+            st.markdown(f"**층수**: {selected_row.get('floorInfo', '정보 없음')}")
+            st.markdown(f"**확인일자**: {selected_row.get('articleConfirmYmd', '정보 없음')}")
+        
+        st.markdown("---")
+        
+        # 매물 특징을 강조하는 컨테이너
+        with st.container(border=True):
+            st.subheader("매물 특징")
+            
+            # '역세권 풀옵션 신축' 같은 문자열이라고 가정
+            feature_string = selected_row.get('articleFeatureDesc', '정보 없음')
+            
+            if feature_string != '정보 없음':
+                # 띄어쓰기를 기준으로 단어들을 분리
+                features_list = feature_string.split()
+                # 쉼표와 공백으로 다시 연결
+                connected_features = ", ".join(features_list)
+                st.write(f"{connected_features}")
+            else:
+                st.write(feature_string)
+
         tag_list = selected_row.get('tagList', [])
         if tag_list:
-            tags_string = " ".join([f'`: {tag}`' for tag in tag_list])
-            st.markdown(f"**태그**: {tags_string}")
-            
+            tags = " ".join([f'`: {tag}`' for tag in tag_list])
+            st.markdown(f"**태그**: {tags}")
+        
+        st.markdown("---")
+
         link = selected_row.get('cpPcArticleUrl', None)
         if link:
-            st.link_button("매물 상세 페이지 바로가기", link, type="primary")
+            # 링크 버튼을 중앙에 배치
+            col_empty1, col_btn, col_empty2 = st.columns([1, 2, 1])
+            with col_btn:
+                st.link_button("매물 상세 페이지 바로가기", link, type="primary", use_container_width=True)
     else:
         st.info("위쪽 리스트에서 매물을 선택해주세요.")
