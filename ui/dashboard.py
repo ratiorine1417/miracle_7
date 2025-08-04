@@ -109,28 +109,36 @@ def show_homepage(df, selected_location):
     selected_data = grid_response.get('selected_rows', [])
 
 
-    if isinstance(selected_data, pd.DataFrame):
-        if not selected_data.empty:
-            selected_row = selected_data.iloc[0].to_dict()
-            st.markdown("### 🏠 매물 상세 정보")
-            
+    if isinstance(selected_data, pd.DataFrame) and not selected_data.empty:
+        selected_row = selected_data.iloc[0].to_dict()
+        st.markdown("### 🏠 매물 상세 정보")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
             st.write(f"**매물명**: {selected_row.get('articleName', '정보 없음')}")
             st.write(f"**매물유형**: {selected_row.get('realEstateTypeName', '정보 없음')}")
             st.write(f"**거래유형**: {selected_row.get('tradeTypeName', '정보 없음')}")
             st.write(f"**보증금/월세**: {selected_row.get('sameAddrMaxPrc', '정보 없음')}")
+            st.write(f"**중개사무소**: {selected_row.get('realtorName', '정보 없음')}")
+
+        with col2:
             st.write(f"**공급/전용면적**: {selected_row.get('area1', '정보 없음')}㎡/{selected_row.get('area2', '정보 없음')}㎡")
             st.write(f"**방향**: {selected_row.get('direction', '정보 없음')}")
             st.write(f"**층수**: {selected_row.get('floorInfo', '정보 없음')}")
-            st.write(f"**매물특징**: {selected_row.get('articleFeatureDesc', '정보 없음')}")
-            
-            tag_list = selected_row.get('tagList', [])
-            tags = ", ".join(tag_list) if tag_list else "정보 없음"
-            st.write(f"**태그**: {tags}")
-            
             st.write(f"**확인일자**: {selected_row.get('articleConfirmYmd', '정보 없음')}")
-            st.write(f"**중개사무소**: {selected_row.get('realtorName', '정보 없음')}")
-            st.write(f"**매물링크**: {selected_row.get('cpPcArticleUrl', '정보 없음')}")
-        else:
-            st.write("📌 선택된 행이 없습니다.")
+
+        st.markdown("---")
+        
+        st.write(f"**매물특징**: {selected_row.get('articleFeatureDesc', '정보 없음')}")
+        
+        tag_list = selected_row.get('tagList', [])
+        if tag_list:
+            tags_string = " ".join([f'`: {tag}`' for tag in tag_list])
+            st.markdown(f"**태그**: {tags_string}")
+            
+        link = selected_row.get('cpPcArticleUrl', None)
+        if link:
+            st.link_button("매물 상세 페이지 바로가기", link, type="primary")
     else:
         st.info("위쪽 리스트에서 매물을 선택해주세요.")
